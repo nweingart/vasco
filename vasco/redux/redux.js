@@ -7,8 +7,10 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case 'FAVORITE_ANIMAL':
-      return { ...state, favoriteAnimal: action.payload }
+    case 'SET_PHOTOS':
+      return { ...state, photos: action.payload }
+    case 'SET_RECEIPTS':
+      return { ...state, receipts: action.payload }
     default:
       return state
   }
@@ -16,11 +18,20 @@ const reducer = (state = initialState, action) => {
 
 const store = createStore(reducer, applyMiddleware(thunkMiddleWare))
 
-const setFavoriteAnimal = (favoriteAnimal) => {
+
+const setPhotos = (photos) => {
   return {
-    type: 'FAVORITE_ANIMAL',
-    payload: favoriteAnimal,
+    type: 'SET_PHOTOS',
+    payload: photos,
   }
 }
 
-export { store, setFavoriteAnimal }
+const setReceipts = (receipts) => {
+  return {
+    type: 'SET_RECEIPTS',
+    payload: receipts,
+  }
+}
+
+
+export { store, setPhotos, setReceipts }

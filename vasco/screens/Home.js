@@ -38,7 +38,7 @@ const Home = () => {
         </TouchableOpacity>
       </View>
       <View>
-        <Text style={styles.title}>VASCO.ai</Text>
+        <Text style={styles.title}>VASCO.io</Text>
       </View>
       <View style={styles.linkWrapper}>
         <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleAddReceipt}>

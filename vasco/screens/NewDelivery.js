@@ -3,82 +3,19 @@ import {
   View,
   ScrollView,
   Text,
-  Image,
   StyleSheet,
   TouchableOpacity,
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
-  Alert
 } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useNavigation } from '@react-navigation/native'
-import * as ImagePicker from 'expo-image-picker'
-import {db, storage, auth} from '../firebase/Firebase'
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
-import { addDoc, collection } from 'firebase/firestore'
 
-const AddReceipt = () => {
+const NewDelivery = () => {
   const [notes, setNotes] = useState('')
-  const [cameraPermission, setCameraPermission] = useState(null);
-  const [image, setImage] = useState('');
-  const [url, setUrl] = useState('');
 
   const navigation = useNavigation()
-  const email = auth.currentUser.email
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.cancelled) {
-      setImage(result.uri);
-    }
-    Alert.alert('Image added', 'Your image has been added to the receipt')
-  };
-
-  const uploadImage = async () => {
-    if (!image) return;
-
-    const response = await fetch(image);
-    const blob = await response.blob();
-
-    const storageRef = ref(storage, `images/${Date.now()}`);
-    const uploadTask = uploadBytesResumable(storageRef, blob);
-
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log(`Upload is ${progress}% done`);
-      },
-      (error) => {
-        console.log(error);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        console.log('File available at:', downloadURL);
-        const date = new Date().toDateString();
-        // Reset the image
-        setImage('');
-        addDoc(collection(db, "receipts"), {
-          email: email,
-          downloadURL: downloadURL,
-          notes: notes,
-          timestamp: date
-        }).then(() => {
-            console.log("Document successfully written!")
-            Alert.alert('Receipt added successfully!', 'Your receipt has been added to your history.')
-            setNotes('')
-          },
-        );
-      })
-  }
 
 
   const handleBack = () => {
@@ -87,6 +24,14 @@ const AddReceipt = () => {
 
   const handleRemoveText = () => {
     setNotes('')
+  }
+
+  const navigateToReceipts = () => {
+    navigation.navigate('UploadReceipts')
+  }
+
+  const navigateToPhotos = () => {
+    navigation.navigate('UploadPhotos')
   }
 
 
@@ -98,7 +43,21 @@ const AddReceipt = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.imageSectionWrapper}>
-          <TouchableOpacity style={{ display: 'flex', flexDirection: 'row', marginLeft: 25 }} onPress={pickImage}>
+        <TouchableOpacity style={{ display: 'flex', flexDirection: 'row', marginLeft: 25 }} onPress={navigateToReceipts}>
+          <Text style={{
+            marginRight: 5,
+            marginLeft: 5,
+            marginTop: 5,
+            fontSize: 14,
+            fontWeight: 'bold',
+            fontFamily: 'Avenir'}}>
+            Add Receipts
+          </Text>
+          <Ionicons name="receipt-outline" size='25' color={'black'} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.imageSectionWrapper}>
+          <TouchableOpacity style={{ display: 'flex', flexDirection: 'row', marginLeft: 25 }} onPress={navigateToPhotos}>
             <Text style={{
               marginRight: 5,
               marginLeft: 5,
@@ -106,13 +65,13 @@ const AddReceipt = () => {
               fontSize: 14,
               fontWeight: 'bold',
               fontFamily: 'Avenir'}}>
-              Add Receipt Photo
+              Add Photos
             </Text>
             <Ionicons name="image-outline" size='25' color={'black'} />
-            <View style={{ marginLeft: 150 }}>
-              {image && <Ionicons name="checkmark-circle-outline" size='25' color={'green'} />}
-            </View>
           </TouchableOpacity>
+      </View>
+      <View>
+
       </View>
       <ScrollView style={styles.textSectionWrapper}>
         <Text style={styles.subtitle}>Notes</Text>
@@ -130,7 +89,7 @@ const AddReceipt = () => {
               autoCapitalize="sentences"
             />
           </TouchableWithoutFeedback>
-          <TouchableOpacity onPress={uploadImage} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 50, width: 350, backgroundColor: 'white', borderRadius: 5, marginTop: 100}}>
+          <TouchableOpacity style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 50, width: 350, backgroundColor: 'white', borderRadius: 5, marginTop: 100}}>
             <Text style={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'Avenir'}}>Confirm</Text>
           </TouchableOpacity>
         </View>
@@ -197,4 +156,4 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
 })
-export default AddReceipt
+export default NewDelivery
