@@ -21,12 +21,16 @@ const Home = () => {
     handleSignOut()
   }
 
-  const handleAddReceipt = () => {
-    navigation.navigate("AddReceipt")
+  const handleNewDelivery = () => {
+    navigation.navigate("NewDelivery")
   }
 
   const handleReceiptHistory = () => {
     navigation.navigate("ReceiptHistory")
+  }
+
+  const handleSettings = () => {
+    navigation.navigate("Settings")
   }
 
 
@@ -41,14 +45,19 @@ const Home = () => {
         <Text style={styles.title}>VASCO.io</Text>
       </View>
       <View style={styles.linkWrapper}>
-        <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleAddReceipt}>
+        <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleNewDelivery}>
           <Text style={styles.linkButtonText}>
-            Add New Receipt
+            New Delivery
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleReceiptHistory}>
           <Text style={styles.linkButtonText}>
-            See Receipt History
+            Delivery History
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleSettings}>
+          <Text style={styles.linkButtonText}>
+            Settings
           </Text>
         </TouchableOpacity>
       </View>
@@ -61,12 +70,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'gold',
+    backgroundColor: 'white',
   },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: 'black',
+    color: '#FFC300',
     marginTop: -175
   },
   logoWrapper: {
@@ -87,7 +96,7 @@ const styles = StyleSheet.create({
   linkButtonWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#FFC300',
     borderRadius: 10,
     height: 50,
     width: 300,

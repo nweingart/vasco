@@ -1,15 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import {Button, Image, View, StyleSheet, TouchableOpacity, TouchableHighlightComponent} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, FlatList, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
-import { setReceipts } from '../redux/redux';
 import { useNavigation} from "@react-navigation/native";
-import { useDispatch } from 'react-redux';
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { setDeliveryReceipts } from "../redux/redux";
+import { useDispatch, useSelector } from "react-redux";
+
 
 const UploadReceipts = () => {
   const [images, setImages] = useState([]);
   const [cameraPermission, setCameraPermission] = useState(null);
   const [galleryPermission, setGalleryPermission] = useState(null);
+
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const deliveryReceipts = useSelector(state => state.deliveryReceipts);
+
+  useEffect(() => {
+    if (deliveryReceipts?.length > 0) {
+      setImages(deliveryReceipts);
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigation.goBack()
+  }
 
   useEffect(() => {
     (async () => {
@@ -47,19 +63,51 @@ const UploadReceipts = () => {
     }
   };
 
+  const submitReceipts = () => {
+    dispatch(setDeliveryReceipts(images))
+    navigation.goBack()
+  }
+
+  const renderImage = ({item}) => (
+    <View style={styles.imageContainer}>
+      <Image style={styles.image} source={{uri: item}} />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={takePicture}>
-        <Text>Take Picture</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={pickImage}>
-        <Text>Select from Camera Roll</Text>
-      </TouchableOpacity>
-      {images.map((image, index) =>
-        <Image key={index} source={{ uri: image }} style={styles.image} />
+      <View style={styles.backButtonContainer}>
+        <TouchableOpacity onPress={handleBack}>
+          <Ionicons name="arrow-back-outline" size={25} color={'black'} />
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.imagesHeading}>Delivery Receipts</Text>
+      {images.length > 0 ? (
+        <FlatList
+          data={images}
+          renderItem={renderImage}
+          keyExtractor={item => item}
+          horizontal={true}
+          style={styles.imageList}
+        />
+      ) : (
+        <Text style={styles.noImagesText}>No receipts added yet</Text>
       )}
-      <TouchableOpacity onPress={() => navigation.navigate('')}>
-      </TouchableOpacity>
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.button} onPress={takePicture}>
+          <Ionicons name="camera-outline" size={35} color={'black'} />
+          <Text style={styles.buttonText}>Take Picture</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={pickImage}>
+          <Ionicons name="image-outline" size={35} color={'black'} />
+          <Text style={styles.buttonText}>Upload From Camera Roll</Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        <TouchableOpacity style={styles.submitButton} onPress={submitReceipts}>
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -67,14 +115,65 @@ const UploadReceipts = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: '30%',
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    left: 30,
+    top: 50,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingTop: 100
+  },
+  button: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '40%',
+  },
+  buttonText: {
+    textAlign: 'center',
+    fontWeight: 600,
+  },
+  imageList: {
+    height: 80,
+    maxHeight: 100,
+    flexGrow: 0,
+    marginTop: 20,
+  },
+  imageContainer: {
+    marginRight: 10,
   },
   image: {
-    width: 200,
-    height: 200,
-    margin: 10,
+    width: 60,
+    height: 60,
   },
-})
+  imagesHeading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  noImagesText: {
+    fontSize: 18,
+    color: 'gray',
+  },
+  submitButton: {
+    marginTop: 25,
+    backgroundColor: '#FFC300',
+    borderRadius: 15,
+    width: 150,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  }
+});
 
 export default UploadReceipts

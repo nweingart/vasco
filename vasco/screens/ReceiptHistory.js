@@ -1,132 +1,88 @@
-import React, { useState, useEffect } from 'react'
-import {
-  ScrollView,
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  Keyboard,
-} from 'react-native'
-import { db, auth } from '../firebase/Firebase'
-import Ionicons from '@expo/vector-icons/Ionicons'
-import { useNavigation } from '@react-navigation/native'
-import { collection, query, where, getDocs } from "firebase/firestore";
+import React, { useState, useEffect } from 'react';
+import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
+import { db } from "../firebase/Firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useNavigation} from "@react-navigation/native";
 
 
-const ReceiptHistory = () => {
-  const [data, setData] = useState([])
-  const email = auth.currentUser.email
+const DeliveryHistory = () => {
+  const [deliveries, setDeliveries] = useState([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const q = query(collection(db, "receipts"), where("email", "==", email))
-      const querySnapshot = await getDocs(q)
-      setData(querySnapshot.docs.map(doc => doc.data()))
-    }
-    fetchData()
-  }, [])
+    const fetchDeliveries = async () => {
+      const deliveriesCollection = collection(db, 'deliveries');
+      const deliveryQuery = query(deliveriesCollection, orderBy('deliveryDate', 'desc')); // This line was added.
+      const deliveryDocs = await getDocs(deliveryQuery); // This line was changed.
+      const deliveryData = deliveryDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDeliveries(deliveryData);
+    };
 
-  console.log(data)
-
-
-  const navigation = useNavigation()
+    fetchDeliveries();
+  }, []);
 
   const handleBack = () => {
-    navigation.navigate('Home')
+    navigation.goBack()
   }
 
-
+  const renderDelivery = ({ item }) => (
+    <View style={styles.deliveryItem}>
+      <Text style={{...styles.itemText, fontWeight: 700, fontSize: 18, color: '#FFC300' }}>{new Date(item.deliveryDate.seconds * 1000).toDateString()}</Text>
+      <Text style={styles.itemText}>{item.deliveryProject}</Text>
+      <Text style={styles.itemText}>{item.deliveryVendor}</Text>
+      <Text style={styles.itemText}>{item.deliveryNotes}</Text>
+    </View>
+  );
 
   return (
-    <ScrollView onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
-      <View style={styles.backButtonWrapper}>
+    <View style={styles.container}>
+      <View style={styles.backButtonContainer}>
         <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back-outline" size='25' color={'black'} />
+          <Ionicons name="arrow-back-outline" size={25} color={'black'} />
         </TouchableOpacity>
       </View>
-      <View>
-        {
-          data?.map((item) => {
-            return (
-              <View style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: 'white',
-                borderColor: 'black',
-                borderWidth: 2,
-                padding: 5,
-                marginVertical: 5,
-              }}>
-                <Text style={{ }}>{item?.timestamp}</Text>
-                <Image source={{ uri: item?.downloadURL }} style={{ width: 50, height: 50, marginLeft: 100  }} />
-              </View>
-            )
-          })
-        }
-      </View>
-    </ScrollView>
-  )
-}
+      <Text style={styles.title}>Delivery History</Text>
+      <FlatList
+        data={deliveries}
+        renderItem={renderDelivery}
+        keyExtractor={item => item.id}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'gold',
-    opacity: 0.9,
-  },
-  backButtonWrapper: {
-    marginTop: 75,
-    marginBottom: 25,
-    marginLeft: 25,
-  },
-  imageSectionWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginBottom: 50,
-  },
-  textSectionWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginTop: -25,
-    height: 250,
-  },
-  subtitle: {
-    marginTop: 25,
-    marginBottom: -30,
-    fontSize: 14,
-    fontWeight: 'bold',
-    fontFamily: 'Avenir',
-    marginLeft: 35,
-  },
-  textBoxWrapper: {
-    marginTop: '10%',
-    display: 'flex',
+    paddingTop: 70,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  textBox: {
-    padding: 35,
-    paddingRight: 50,
-    marginTop: -20,
-    paddingTop: 10,
-    height: 125,
-    width: 350,
-    borderRadius: 15,
-    borderColor: 'gray',
-    borderWidth: 1,
-    backgroundColor: 'white',
+  backButtonContainer: {
+    position: 'absolute',
+    left: 30,
+    top: 50,
   },
-  clearButton: {
-    marginLeft: 35,
-    marginTop: 130,
-    marginBottom: -130,
-    zIndex: 5,
+  title: {
+    fontSize: 24,
+    marginBottom: 25,
+    fontWeight: 600,
   },
-  buttonsWrapper: {
-    flexDirection: 'row',
+  deliveryItem: {
+    backgroundColor: '#ddd',
+    marginBottom: 10,
+    padding: 20,
+    width: 275,
   },
-})
-export default ReceiptHistory
+  itemText: {
+    fontSize: 14,
+    fontWeight: 400,
+    fontFamily: 'Helvetica Neue',
+    marginVertical: 5,
+  }
+});
+
+
+
+export default DeliveryHistory;

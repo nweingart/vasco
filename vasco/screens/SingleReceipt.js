@@ -12,7 +12,7 @@ const SingleReceipt = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'gold',
+    backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
   }

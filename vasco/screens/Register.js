@@ -50,7 +50,7 @@ const Register = () => {
       behavior="padding"
     >
       <View>
-        <Text style={styles.title}>VASCO.io</Text>
+        <Text style={styles.title}>VASCO</Text>
       </View>
       <View style={styles.inputContainer}>
         <TextInput
@@ -79,11 +79,11 @@ const Register = () => {
           onPress={handleRegister}
           style={styles.button}
         >
-          <Text>Register</Text>
+          <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.register}>
-        <Text onPress={handleLogin}>
+        <Text style={styles.bottomText} onPress={handleLogin}>
           Already have an account? Login here
         </Text>
       </View>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'gold',
+    backgroundColor: 'white',
   },
   logoWrapper: {
     position: 'absolute',
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: 'black',
+    color: '#FFC300',
     marginBottom: 25
   },
   input: {
@@ -130,14 +130,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    backgroundColor: 'white',
+    backgroundColor: '#FFC300',
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
   },
   buttonText: {
     color: 'black',
-    fontWeight: '700',
+    fontWeight: 600,
     fontSize: 16,
   },
   buttonOutline: {
@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   bottomText: {
-    fontWeight: '700',
     fontSize: 14,
+    fontWeight: 600
   }
 })
 
