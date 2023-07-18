@@ -191,8 +191,6 @@ const NewDelivery = () => {
     )
   }
 
-
-
   return (
     <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
       <View style={styles.backButtonWrapper}>
