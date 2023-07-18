@@ -13,17 +13,20 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useNavigation } from '@react-navigation/native'
 import DatePicker from '../common/DatePicker'
-import {useSelector} from "react-redux";
+import { useSelector } from "react-redux";
 import { setDeliveryReceipts, setDeliveryPhotos, setDeliveryDate, setDeliveryProject, setDeliveryVendor, setDeliveryNotes } from "../redux/redux";
-import { db } from "../firebase/Firebase";
+import { db, auth } from "../firebase/Firebase";
 import { collection, addDoc } from "firebase/firestore";
-import {useDispatch} from "react-redux";
+import { useDispatch } from "react-redux";
+import { getFunctions, httpsCallable } from 'firebase/functions'
 
 const NewDelivery = () => {
   const [notes, setNotes] = useState('')
   const [project, setProject] = useState('')
   const [vendor, setVendor] = useState('')
 
+  const email = auth.currentUser.email
+  const functions = getFunctions()
   const deliveryReceipts = useSelector(state => state.deliveryReceipts)
   const deliveryPhotos = useSelector(state => state.deliveryPhotos)
   const deliveryDate = useSelector(state => state.deliveryDate)
@@ -81,7 +84,6 @@ const NewDelivery = () => {
   }
 
   const handleSubmit = () => {
-    console.log(deliveryReceipts, deliveryPhotos, deliveryDate, deliveryProject, deliveryVendor, deliveryNotes)
     Alert.alert(
       "Submit",
       "Are you sure you want to submit this delivery",
@@ -103,6 +105,18 @@ const NewDelivery = () => {
                 deliveryVendor,
                 deliveryNotes
               });
+              const sendEmail = httpsCallable(functions, 'sendEmail');
+              sendEmail({
+                email: email,
+                deliveryReceipts: deliveryReceipts,
+                deliveryPhotos: deliveryPhotos,
+                deliveryDate: deliveryDate,
+                deliveryProject: deliveryProject,
+                deliveryVendor: deliveryVendor,
+                deliveryNotes: deliveryNotes
+              }).then(result => {
+                console.log(result.data)
+              })
             } else {
               Alert.alert('Missing Fields', 'Please fill out all fields');
               return;
@@ -111,7 +125,7 @@ const NewDelivery = () => {
             navigation.navigate('Home');
             dispatch(setDeliveryReceipts([]));
             dispatch(setDeliveryPhotos([]));
-            dispatch(setDeliveryDate(null)); // or appropriate initial value
+            dispatch(setDeliveryDate(null));
             dispatch(setDeliveryProject(''));
             dispatch(setDeliveryVendor(''));
             dispatch(setDeliveryNotes(''));
