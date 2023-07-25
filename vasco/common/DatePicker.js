@@ -33,7 +33,7 @@ const MyDatePicker = ({ onConfirm }) => {
           />
         </View>
         {show ? (
-          <View>
+          <View style={{ marginTop: 45, marginLeft: -47}}>
             <DateTimePicker
               testID="dateTimePicker"
               value={tempDate}
@@ -42,7 +42,11 @@ const MyDatePicker = ({ onConfirm }) => {
               onChange={onChange}
               style={{backgroundColor: 'white'}}
             />
-            <Button onPress={confirmDate} title="Confirm" color={'black'} />
+            <View style={{ display: 'flex', justifyContent: 'center',alignItems: 'center',}}>
+              <TouchableOpacity style={{ display: 'flex', justifyContent: 'center',alignItems: 'center', backgroundColor: 'black', height: 35, width: 100, borderRadius: 5, marginVertical: 15 }} onPress={confirmDate}>
+                <Text style={{ color:  '#FFC300', fontWeight: 'bold' }}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <Text style={styles.calendarText}>{date.toDateString()}</Text>
@@ -56,7 +60,6 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     backgroundColor: '#FFC300',
     borderRadius: 7.5,
   },
@@ -65,7 +68,7 @@ const styles = StyleSheet.create({
   },
   calendarText: {
     fontSize: 16,
-    marginRight: 85,
+    marginLeft: 50,
     fontWeight: 500,
     marginTop: 5,
   }

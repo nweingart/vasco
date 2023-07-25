@@ -23,6 +23,7 @@ const Settings = () => {
   const [modalVisible, setModalVisible] = React.useState(false)
   const [email, setEmail] = React.useState([])
   const [mailingList, setMailingList] = React.useState([])
+  const [showInformation, setShowInformation] = React.useState(false)
 
   const userEmail = auth.currentUser.email
   console.log(userEmail)
@@ -100,6 +101,22 @@ const Settings = () => {
     )
   }
 
+  const InformationItem = () => {
+    return (
+      <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 50, width: 300, padding: 5}}>
+        <Text style={{ color: showInformation ? 'black' : 'white' }} >Add email recipients will receive an email each time a package is received</Text>
+      </View>
+    )
+  }
+
+  const handleInformation = () => {
+    if (showInformation) {
+      setShowInformation(false)
+    } else {
+      setShowInformation(true)
+    }
+  }
+
 
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
@@ -119,8 +136,6 @@ const Settings = () => {
     navigation.navigate('Home')
   }
 
-
-
   return (
     <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
       <View style={styles.backButtonWrapper}>
@@ -131,7 +146,11 @@ const Settings = () => {
       <View style={styles.titleWrapper}>
         <Text style={styles.title}>Settings</Text>
       </View>
+      <View style={{ marginVertical: 25, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <InformationItem />
+      </View>
       <View style={styles.switchWrapper}>
+        <Ionicons onPress={handleInformation} name="information-circle-outline" size='25' color={'black'} />
         <Text style={styles.switchText}>Email Receipts</Text>
         <Switch
           trackColor={{false: '#767577', true: '#FFC300'}}
@@ -230,7 +249,7 @@ const styles = StyleSheet.create({
   emailListWrapper: {
     display: 'flex',
     marginLeft: 20,
-    marginTop: 75,
+    marginTop: 175,
     position: 'absolute',
     top: '25%',
     backgroundColor: 'white',
