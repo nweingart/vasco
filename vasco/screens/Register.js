@@ -1,6 +1,6 @@
 // ui imports
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput } from 'react-native'
+import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image} from 'react-native'
 
 // firebase imports
 import { auth, db } from '../firebase/Firebase'
@@ -9,6 +9,7 @@ import { setDoc, doc } from 'firebase/firestore'
 
 // navigation imports
 import { useNavigation } from '@react-navigation/native'
+import Logo from "../assets/Logo.png";
 
 const Register = () => {
   const navigation = useNavigation()
@@ -50,7 +51,10 @@ const Register = () => {
       behavior="padding"
     >
       <View>
-        <Text style={styles.title}>VASCO</Text>
+        <Image style={{ height: 100, width: 100, marginBottom: 100, marginTop: -75 }} source={Logo} />
+      </View>
+      <View style={{ zIndex: 5, marginBottom: 25, marginTop: -75  }}>
+        <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 24 }}>VASCO</Text>
       </View>
       <View style={styles.inputContainer}>
         <TextInput

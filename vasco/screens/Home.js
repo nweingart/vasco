@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'
 import { useNavigation } from "@react-navigation/native"
 import { auth } from '../firebase/Firebase'
+import Logo from '../assets/Logo.png'
 
 
 const Home = () => {
@@ -42,7 +43,10 @@ const Home = () => {
         </TouchableOpacity>
       </View>
       <View>
-        <Text style={styles.title}>VASCO.io</Text>
+        <Image style={{ height: 100, width: 100, marginBottom: 100, marginTop: -75 }} source={Logo} />
+      </View>
+      <View style={{ zIndex: 5, marginBottom: 125, marginTop: -75  }}>
+        <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 24 }}>VASCO</Text>
       </View>
       <View style={styles.linkWrapper}>
         <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleNewDelivery}>
