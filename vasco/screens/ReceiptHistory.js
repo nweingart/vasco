@@ -32,6 +32,7 @@ const DeliveryHistory = () => {
       <Text style={styles.itemText}>{item.deliveryProject}</Text>
       <Text style={styles.itemText}>{item.deliveryVendor}</Text>
       <Text style={styles.itemText}>{item.deliveryNotes}</Text>
+      <Text style={styles.itemText}>{item.deliveryStatus}</Text>
     </View>
   );
 
