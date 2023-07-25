@@ -23,6 +23,8 @@ const reducer = (state = initialState, action) => {
       return { ...state, emailReceipts: action.payload }
     case 'SET_MAILING_LIST':
       return { ...state, mailingList: action.payload }
+    case 'DELIVERY_STATUS':
+      return { ...state, deliveeryStatus: action.payload }
     default:
       return state
   }
@@ -85,6 +87,13 @@ const setMailingList = (mailingList) => {
   }
 }
 
+const setDeliveryStatus = (deliveryStatus) => {
+  return {
+    type: 'DELIVERY_STATUS',
+    payload: deliveryStatus,
+  }
+}
+
 export {
   store,
   setDeliveryReceipts,
@@ -93,6 +102,7 @@ export {
   setDeliveryProject,
   setDeliveryVendor,
   setDeliveryNotes,
+  setDeliveryStatus,
   setEmailReceipts,
   setMailingList,
 }
