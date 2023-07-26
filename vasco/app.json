@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "vasco",
+    "name": "Vasco Delivery Tracker",
     "slug": "vasco",
     "version": "0.0.1",
     "orientation": "portrait",
@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nedweingart.vasco"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +26,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "898ad22d-04ad-4b9c-8aa6-187089440a5e"
+      }
     }
   }
 }
