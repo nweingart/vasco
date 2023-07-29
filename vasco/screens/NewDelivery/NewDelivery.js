@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+
+// ui imports
 import {
   Alert,
   View,
@@ -8,12 +10,16 @@ import {
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
-  ScrollView
 } from 'react-native'
+import RowItem from './RowItem'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import DatePicker from '../../common/DatePicker'
+
+// navigation imports
 import { useNavigation } from '@react-navigation/native'
-import DatePicker from '../common/DatePicker'
-import { useSelector } from "react-redux";
+
+// redux imports
+import { useSelector } from 'react-redux'
 import {
   setDeliveryReceipts,
   setDeliveryPhotos,
@@ -22,10 +28,12 @@ import {
   setDeliveryVendor,
   setDeliveryNotes,
   setDeliveryStatus,
-} from "../redux/redux";
-import { db, auth } from "../firebase/Firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { useDispatch } from "react-redux";
+} from '../../redux/redux'
+import { useDispatch } from 'react-redux'
+
+// firebase imports
+import { db, auth } from '../../firebase/Firebase'
+import { collection, addDoc } from 'firebase/firestore'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 
 const NewDelivery = () => {
@@ -91,16 +99,16 @@ const NewDelivery = () => {
 
   const handleCancel = () => {
     Alert.alert(
-      "Cancel",
-      "Are you sure you want to cancel this delivery",
+      'Cancel',
+      'Are you sure you want to cancel this delivery'
       [
         {
-          text: "No",
+          text: 'No',
           onPress: () => null,
-          style: "cancel"
+          style: 'Cancel'
         },
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => navigation.navigate('Home')
         }
       ],
@@ -110,16 +118,16 @@ const NewDelivery = () => {
 
   const handleSubmit = () => {
     Alert.alert(
-      "Submit",
+      'Submit',
       "Are you sure you want to submit this delivery",
       [
         {
-          text: "No",
+          text: 'No',
           onPress: () => null,
-          style: "cancel"
+          style: 'cancel'
         },
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
             if (deliveryReceipts && deliveryPhotos && deliveryProject && deliveryVendor && deliveryNotes && deliveryStatus) {
               addDelivery({
@@ -228,37 +236,12 @@ const NewDelivery = () => {
 
 
 
-  const RowItem = ({ iconName, text, onPress, valueCount }) => {
-    return (
-      <ScrollView style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical: 15, marginRight: 25,  backgroundColor: '#FFC300' }}>
-        <TouchableOpacity
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginHorizontal: 25,
-          }}
-          onPress={onPress}>
-          <View>
-            <Ionicons name={iconName} size={25} color={'black'} />
-          </View>
-          <View>
-            <Text style={{ fontWeight: 500, marginTop: 5 }}>{text}</Text>
-          </View>
-          <View>
-            {valueCount > 0 ? <Text style={{ fontWeight: 700, color: 'green', marginTop: 5 }}>{valueCount}</Text> : <Ionicons name="caret-forward-outline" size={25} color={'black'} />}
-          </View>
-        </TouchableOpacity>
-      </ScrollView>
-    )
-  }
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
         <View style={styles.backButtonWrapper}>
           <TouchableOpacity onPress={handleBack}>
-            <Ionicons name="arrow-back-outline" size='25' color={'black'} />
+            <Ionicons name='arrow-back-outline' size='25' color={'black'} />
           </TouchableOpacity>
           <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
           <RowItem onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
