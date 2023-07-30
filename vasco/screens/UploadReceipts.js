@@ -1,48 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, FlatList, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Camera } from 'expo-camera';
 import { useNavigation} from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { setDeliveryReceipts } from "../redux/redux";
+import { setDeliveryReceipts, setReceiptsDownloadUrls } from "../redux/redux";
 import { useDispatch, useSelector } from "react-redux";
-
+import { uploadImageToFirebase } from "../utils/uploadImage";
 
 const UploadReceipts = () => {
   const [images, setImages] = useState([]);
-  const [cameraPermission, setCameraPermission] = useState(null);
-  const [galleryPermission, setGalleryPermission] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const deliveryReceipts = useSelector(state => state.deliveryReceipts);
+  const deliveryPhotos = useSelector(state => state.deliveryPhotos);
 
   useEffect(() => {
-    if (deliveryReceipts?.length > 0) {
-      setImages(deliveryReceipts);
+    if (deliveryPhotos?.length > 0) {
+      setImages(deliveryPhotos);
     }
   }, []);
 
+  const submitReceipts = async () => {
+    setUploading(true);
+    const uploadPromises = images.map(uploadImageToFirebase);
+    const downloadUrls = await Promise.all(uploadPromises);
+    dispatch(setDeliveryReceipts(images))
+    dispatch(setReceiptsDownloadUrls(downloadUrls));
+  }
+
   const handleBack = () => {
+    submitReceipts()
+      .then(() => console.log('Receipts uploaded successfully'))
+      .catch((error) => console.error('There was an error uploading the receipts:', error))
     navigation.goBack()
   }
 
-  useEffect(() => {
-    (async () => {
-      const { status: cameraStatus } = await Camera.requestPermissionsAsync();
-      setCameraPermission(cameraStatus === 'granted');
-
-      const { status: galleryStatus }  = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      setGalleryPermission(galleryStatus === 'granted');
-
-      if (cameraStatus !== 'granted' || galleryStatus !== 'granted') {
-        alert('Sorry, we need camera roll and camera permissions to make this work!');
-      }
-    })();
-  }, []);
 
   const takePicture = async () => {
-    if (cameraPermission && images.length < 5) {
+    if (images.length < 5) {
       let result = await ImagePicker.launchCameraAsync();
 
       if (!result.cancelled) {
@@ -52,7 +48,7 @@ const UploadReceipts = () => {
   };
 
   const pickImage = async () => {
-    if (galleryPermission && images.length < 5) {
+    if (images.length < 5) {
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
@@ -62,11 +58,6 @@ const UploadReceipts = () => {
       }
     }
   };
-
-  const submitReceipts = () => {
-    dispatch(setDeliveryReceipts(images))
-    navigation.goBack()
-  }
 
   const renderImage = ({item}) => (
     <View style={styles.imageContainer}>
@@ -101,11 +92,6 @@ const UploadReceipts = () => {
         <TouchableOpacity style={styles.button} onPress={pickImage}>
           <Ionicons name="image-outline" size={35} color={'black'} />
           <Text style={styles.buttonText}>Upload From Camera Roll</Text>
-        </TouchableOpacity>
-      </View>
-      <View>
-        <TouchableOpacity style={styles.submitButton} onPress={submitReceipts}>
-          <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </View>
     </View>

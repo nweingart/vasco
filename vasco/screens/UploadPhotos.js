@@ -1,22 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, FlatList, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Camera } from 'expo-camera';
-import { useNavigation } from '@react-navigation/native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { setDeliveryPhotos } from '../redux/redux';
-import { useDispatch } from 'react-redux'
+import { useNavigation} from "@react-navigation/native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { setDeliveryPhotos } from "../redux/redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setPhotoDownloadUrls } from "../redux/redux";
+import { uploadImageToFirebase } from "../utils/uploadImage";
+
 
 const UploadPhotos = () => {
   const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const deliveryPhotos = useSelector(state => state.deliveryPhotos);
 
+  useEffect(() => {
+    if (deliveryPhotos?.length > 0) {
+      setImages(deliveryPhotos);
+    }
+  }, []);
+
+  const submitPhotos = async () => {
+    setUploading(true);
+    const uploadPromises = images.map(uploadImageToFirebase);
+    const downloadUrls = await Promise.all(uploadPromises);
+    dispatch(setDeliveryPhotos(images))
+    dispatch(setPhotoDownloadUrls(downloadUrls));
+  }
 
   const handleBack = () => {
-    navigation.goBack();
-  };
+    submitPhotos()
+      .then(() => console.log('Photos uploaded successfully'))
+      .catch((error) => console.error('There was an error uploading the photos:', error))
+    navigation.goBack()
+  }
+
 
   const takePicture = async () => {
     if (images.length < 5) {
@@ -40,14 +61,9 @@ const UploadPhotos = () => {
     }
   };
 
-  const submitPhotos = async () => {
-      dispatch(setDeliveryPhotos(images));
-      navigation.goBack();
-  };
-
-  const renderImage = ({ item }) => (
+  const renderImage = ({item}) => (
     <View style={styles.imageContainer}>
-      <Image style={styles.image} source={{ uri: item }} />
+      <Image style={styles.image} source={{uri: item}} />
     </View>
   );
 
@@ -80,14 +96,9 @@ const UploadPhotos = () => {
           <Text style={styles.buttonText}>Upload From Camera Roll</Text>
         </TouchableOpacity>
       </View>
-      <View>
-        <TouchableOpacity style={styles.submitButton} onPress={submitPhotos}>
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -106,7 +117,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    paddingTop: 100,
+    paddingTop: 100
   },
   button: {
     alignItems: 'center',
@@ -115,7 +126,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: 600,
   },
   imageList: {
     height: 80,
@@ -150,8 +161,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontWeight: 'bold',
     fontSize: 18,
-  },
+  }
 });
 
-export default UploadPhotos;
-
+export default UploadPhotos
