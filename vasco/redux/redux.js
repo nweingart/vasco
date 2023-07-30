@@ -24,7 +24,16 @@ const reducer = (state = initialState, action) => {
     case 'SET_MAILING_LIST':
       return { ...state, mailingList: action.payload }
     case 'DELIVERY_STATUS':
-      return { ...state, deliveeryStatus: action.payload }
+      return { ...state, deliveryStatus: action.payload }
+    case 'SET_RECEIPT_DOWNLOAD_URLS':
+      return { ...state, receiptDownloadURLs: action.payload }
+    case 'SET_PHOTO_DOWNLOAD_URLS':
+      return { ...state, photoDownloadURLs: action.payload }
+    case 'STATUS_FILTER':
+      return { ...state, statusFilter: action.payload }
+    case 'DATE_FILTER': {
+      return { ...state, dateFilter: action.payload }
+    }
     default:
       return state
   }
@@ -94,6 +103,34 @@ const setDeliveryStatus = (deliveryStatus) => {
   }
 }
 
+const setReceiptsDownloadUrls = (receiptDownloadUrls) => {
+  return {
+    type: 'SET_RECEIPT_DOWNLOAD_URLS',
+    payload: receiptDownloadUrls,
+  }
+}
+
+const setPhotoDownloadUrls = (photoDownloadUrls) => {
+  return {
+    type: 'SET_PHOTO_DOWNLOAD_URLS',
+    payload: photoDownloadUrls,
+  }
+}
+
+const setStatusFilter = (statusFilter) => {
+  return {
+    type: 'STATUS_FILTER',
+    payload: statusFilter,
+  }
+}
+
+const setDateFiler = (dateFilter) => {
+  return {
+    type: 'DATE_FILTER',
+    payload: dateFilter,
+  }
+}
+
 export {
   store,
   setDeliveryReceipts,
@@ -105,4 +142,8 @@ export {
   setDeliveryStatus,
   setEmailReceipts,
   setMailingList,
+  setReceiptsDownloadUrls,
+  setPhotoDownloadUrls,
+  setStatusFilter,
+  setDateFiler,
 }
