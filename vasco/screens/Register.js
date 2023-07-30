@@ -9,7 +9,7 @@ import { setDoc, doc } from 'firebase/firestore'
 
 // navigation imports
 import { useNavigation } from '@react-navigation/native'
-import Logo from "../assets/Logo.png";
+import AppIcon from "../assets/appicon.png";
 
 const Register = () => {
   const navigation = useNavigation()
@@ -51,7 +51,7 @@ const Register = () => {
       behavior="padding"
     >
       <View>
-        <Image style={{ height: 100, width: 100, marginBottom: 100, marginTop: -75 }} source={Logo} />
+        <Image style={{ height: 100, width: 100, marginBottom: 100, marginTop: -75 }} source={AppIcon} />
       </View>
       <View style={{ zIndex: 5, marginBottom: 25, marginTop: -75  }}>
         <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 24 }}>VASCO</Text>
