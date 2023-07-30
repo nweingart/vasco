@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image} from 'react-native'
 // firebase imports
-import { auth } from '../firebase/Firebase'
+import { auth } from '../../firebase/Firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { setDoc, doc } from 'firebase/firestore'
 

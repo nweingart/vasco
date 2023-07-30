@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react'
 import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image} from 'react-native'
 
 // firebase imports
-import { auth, db } from '../firebase/Firebase'
+import { auth, db } from '../../firebase/Firebase'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { setDoc, doc } from 'firebase/firestore'
 
 // navigation imports
 import { useNavigation } from '@react-navigation/native'
-import AppIcon from "../assets/appicon.png";
+import AppIcon from "../../assets/appicon.png";
 
 const Register = () => {
   const navigation = useNavigation()
