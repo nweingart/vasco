@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput} from 'react-native';
 import { db } from "../firebase/Firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -8,6 +8,8 @@ import { useNavigation} from "@react-navigation/native";
 
 const DeliveryHistory = () => {
   const [deliveries, setDeliveries] = useState([]);
+  const [filteredDeliveries, setFilteredDeliveries] = useState([]);
+  const [search, setSearch] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -17,10 +19,22 @@ const DeliveryHistory = () => {
       const deliveryDocs = await getDocs(deliveryQuery); // This line was changed.
       const deliveryData = deliveryDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setDeliveries(deliveryData);
+      setFilteredDeliveries(deliveryData);
     };
 
     fetchDeliveries();
   }, []);
+
+  useEffect(() => {
+    setFilteredDeliveries(
+      deliveries.filter(item =>
+        item.deliveryProject.toLowerCase().includes(search.toLowerCase()) ||
+        item.deliveryVendor.toLowerCase().includes(search.toLowerCase()) ||
+        item.deliveryNotes.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+  }, [search]);
+
 
   const handleBack = () => {
     navigation.goBack()
@@ -44,8 +58,14 @@ const DeliveryHistory = () => {
         </TouchableOpacity>
       </View>
       <Text style={styles.title}>Delivery History</Text>
+      <TextInput
+        value={search}
+        onChangeText={text => setSearch(text)}
+        placeholder="Search by project"
+        style={styles.input}
+      />
       <FlatList
-        data={deliveries}
+        data={filteredDeliveries}
         renderItem={renderDelivery}
         keyExtractor={item => item.id}
       />
@@ -67,8 +87,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    marginBottom: 25,
-    fontWeight: 600,
+    marginBottom: 5,
+    fontWeight: '600',
   },
   deliveryItem: {
     backgroundColor: '#ddd',
@@ -78,12 +98,19 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 14,
-    fontWeight: 400,
+    fontWeight: '400',
     fontFamily: 'Helvetica Neue',
     marginVertical: 5,
+  },
+  input: {
+    height: 40,
+    width: 275,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5,
   }
 });
 
-
-
 export default DeliveryHistory;
+
