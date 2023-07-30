@@ -28,6 +28,8 @@ import {
   setDeliveryVendor,
   setDeliveryNotes,
   setDeliveryStatus,
+  setReceiptsDownloadUrls,
+  setPhotoDownloadUrls,
 } from '../../redux/redux'
 import { useDispatch } from 'react-redux'
 
@@ -40,7 +42,7 @@ const NewDelivery = () => {
   const [notes, setNotes] = useState('')
   const [project, setProject] = useState('')
   const [vendor, setVendor] = useState('')
-  const [status, setStatus] = useState('Not Approved')
+  const [status, setStatus] = useState('')
   const [showInformation, setShowInformation] = useState(false)
 
   const email = auth.currentUser.email
@@ -52,6 +54,8 @@ const NewDelivery = () => {
   const deliveryVendor = useSelector(state => state.deliveryVendor)
   const deliveryNotes = useSelector(state => state.deliveryNotes)
   const deliveryStatus = useSelector(state => state.deliveryStatus)
+  const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
+  const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
 
   const addDelivery = async ({
      deliveryReceipts,
@@ -61,6 +65,8 @@ const NewDelivery = () => {
      deliveryVendor,
      deliveryNotes,
      deliveryStatus,
+     deliveryPhotoDownloadUrls,
+     deliveryReceiptDownloadUrls
   }) => {
     try {
       const docRef = await addDoc(collection(db, 'deliveries'), {
@@ -70,7 +76,9 @@ const NewDelivery = () => {
         deliveryProject,
         deliveryVendor,
         deliveryNotes,
-        deliveryStatus
+        deliveryStatus,
+        deliveryPhotoDownloadUrls,
+        deliveryReceiptDownloadUrls
       });
       console.log('Document written with ID: ', docRef.id);
     } catch (e) {
@@ -129,7 +137,6 @@ const NewDelivery = () => {
         {
           text: 'Yes',
           onPress: () => {
-            if (deliveryReceipts && deliveryPhotos && deliveryProject && deliveryVendor && deliveryNotes && deliveryStatus) {
               addDelivery({
                 deliveryReceipts,
                 deliveryPhotos,
@@ -137,7 +144,9 @@ const NewDelivery = () => {
                 deliveryProject,
                 deliveryVendor,
                 deliveryNotes,
-                deliveryStatus
+                deliveryStatus,
+                deliveryPhotoDownloadUrls,
+                deliveryReceiptDownloadUrls
               });
               const sendEmail = httpsCallable(functions, 'sendEmail');
               sendEmail({
@@ -148,16 +157,12 @@ const NewDelivery = () => {
                 deliveryProject: deliveryProject,
                 deliveryVendor: deliveryVendor,
                 deliveryNotes: deliveryNotes,
-                deliveryStatus: deliveryStatus
+                deliveryStatus: deliveryStatus,
+                deliveryPhotoDownloadUrls: deliveryPhotoDownloadUrls,
+                deliveryReceiptDownloadUrls: deliveryReceiptDownloadUrls
               }).then(result => {
                 console.log(result.data)
               })
-            } else {
-              Alert.alert('Missing Fields', 'Please fill out all fields');
-              return;
-            }
-            Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
-            navigation.navigate('Home');
             dispatch(setDeliveryReceipts([]));
             dispatch(setDeliveryPhotos([]));
             dispatch(setDeliveryDate(null));
@@ -165,6 +170,17 @@ const NewDelivery = () => {
             dispatch(setDeliveryVendor(''));
             dispatch(setDeliveryNotes(''));
             dispatch(setDeliveryStatus('Not Approved'));
+            dispatch(setReceiptsDownloadUrls([]));
+            dispatch(setPhotoDownloadUrls([]));
+            setNotes('')
+            setProject('')
+            setVendor('')
+            setStatus('Not Approved')
+
+
+            Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
+            navigation.navigate('Home');
+
           }
         }
       ],
@@ -248,7 +264,6 @@ const NewDelivery = () => {
             <Text style={styles.textBoxText}>Project</Text>
               <TextInput
                 style={{ ...styles.textBox, height: 50 }}
-                multiline={true}
                 value={project}
                 onChangeText={handleProjectChange}
                 autoCapitalize="sentences"
@@ -258,7 +273,6 @@ const NewDelivery = () => {
             <Text style={styles.textBoxText}>Vendor</Text>
               <TextInput
                 style={{ ...styles.textBox, height: 50 }}
-                multiline={true}
                 value={vendor}
                 onChangeText={handleVendorChange}
                 autoCapitalize="sentences"
@@ -268,7 +282,6 @@ const NewDelivery = () => {
             <Text style={styles.textBoxText}>Notes</Text>
               <TextInput
                 style={ styles.textBox }
-                multiline={true}
                 value={notes}
                 onChangeText={handleNotesChange}
                 autoCapitalize="sentences"

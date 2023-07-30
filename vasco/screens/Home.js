@@ -27,7 +27,7 @@ const Home = () => {
   }
 
   const handleReceiptHistory = () => {
-    navigation.navigate("ReceiptHistory")
+    navigation.navigate("DeliveryHistory")
   }
 
   const handleSettings = () => {

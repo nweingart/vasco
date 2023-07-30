@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput} from 'react-native';
-import { db } from "../firebase/Firebase";
+import {View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image} from 'react-native';
+import { db } from "../../firebase/Firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation} from "@react-navigation/native";
@@ -35,18 +35,40 @@ const DeliveryHistory = () => {
     );
   }, [search]);
 
-
   const handleBack = () => {
     navigation.goBack()
   }
 
+  const handleFilter = () => {
+    navigation.navigate('Filter')
+  }
+
   const renderDelivery = ({ item }) => (
     <View style={styles.deliveryItem}>
-      <Text style={{...styles.itemText, fontWeight: 700, fontSize: 18, color: '#FFC300' }}>{new Date(item.deliveryDate.seconds * 1000).toDateString()}</Text>
+      <View style={{ display: 'flex', flexDirection: 'row' }}>
+        <Text style={{...styles.itemText, fontWeight: '600', marginBottom: 15 }}>
+          {new Date(item.deliveryDate.seconds * 1000).toDateString()}
+        </Text>
+        <View style={{ marginLeft: 150 }}>
+          {item.deliveryStatus === 'Approved' ?
+            <Ionicons name="checkmark-circle-outline" size={35} color={'#40D35D'} />
+            : <Ionicons name="close-circle" size={35} color={'#FF0A0A'} />
+          }
+        </View>
+      </View>
       <Text style={styles.itemText}>{item.deliveryProject}</Text>
       <Text style={styles.itemText}>{item.deliveryVendor}</Text>
       <Text style={styles.itemText}>{item.deliveryNotes}</Text>
       <Text style={styles.itemText}>{item.deliveryStatus}</Text>
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        {item.deliveryPhotos.map((photoUrl, index) => (
+          <Image
+            key={index}
+            style={{ width: 100, height: 100, marginHorizontal: 5, borderRadius: 5}}
+            source={{ uri: photoUrl }}
+          />
+        ))}
+      </ScrollView>
     </View>
   );
 
@@ -58,12 +80,23 @@ const DeliveryHistory = () => {
         </TouchableOpacity>
       </View>
       <Text style={styles.title}>Delivery History</Text>
-      <TextInput
-        value={search}
-        onChangeText={text => setSearch(text)}
-        placeholder="Search by project"
-        style={styles.input}
-      />
+      <View style={styles.searchContainer}>
+        <TextInput
+          value={search}
+          onChangeText={text => setSearch(text)}
+          placeholder="Search"
+          style={styles.input}
+        />
+        <View style={styles.leftIconContainer}>
+          <Ionicons name="search" size={35} color={'black'} />
+        </View>
+        <View style={styles.rightIconContainer}>
+          <TouchableOpacity onPress={handleFilter}>
+            <Ionicons name="options" size={35} color={'black'} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <FlatList
         data={filteredDeliveries}
         renderItem={renderDelivery}
@@ -79,6 +112,7 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#e8e7e7',
   },
   backButtonContainer: {
     position: 'absolute',
@@ -91,25 +125,44 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   deliveryItem: {
-    backgroundColor: '#ddd',
+    backgroundColor: '#fff',
     marginBottom: 10,
     padding: 20,
-    width: 275,
+    width: 350,
+    borderRadius: 5,
   },
   itemText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '400',
     fontFamily: 'Helvetica Neue',
     marginVertical: 5,
   },
+  dateText: {
+    fontWeight: '600',
+    marginVertical: 5,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    marginBottom: 15,
+    marginTop: 10,
+  },
   input: {
-    height: 40,
-    width: 275,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 5,
-  }
+    height: 50,
+    backgroundColor: '#d0cece',
+    paddingLeft: 60, // Adjust as per the size of the icon + desired spacing
+    width: 350,
+    fontSize: 16,// Or any width you want
+  },
+  leftIconContainer: {
+    position: 'absolute',
+    left: 15, // Desired space from the left
+  },
+  rightIconContainer: {
+    position: 'absolute',
+    right: 15, // Desired space from the left
+  },
 });
 
 export default DeliveryHistory;
