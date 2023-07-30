@@ -234,8 +234,6 @@ const NewDelivery = () => {
     )
   }
 
-
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
