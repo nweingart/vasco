@@ -7,7 +7,7 @@ import { setDoc, doc } from 'firebase/firestore'
 
 // navigation imports
 import { useNavigation } from '@react-navigation/native'
-import AppIcon from "../assets/appicon.png";
+import AppIcon from "../../assets/appicon.png";
 
 const Login = () => {
   const navigation = useNavigation()
