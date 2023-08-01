@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
   TextInput,
   Keyboard,
+  KeyboardAvoidingView,
   TouchableWithoutFeedback,
+  Platform,
 } from 'react-native'
 import RowItem from './RowItem'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -108,7 +110,7 @@ const NewDelivery = () => {
   const handleCancel = () => {
     Alert.alert(
       'Cancel',
-      'Are you sure you want to cancel this delivery'
+      'Are you sure you want to cancel this delivery',
       [
         {
           text: 'No',
@@ -241,7 +243,6 @@ const NewDelivery = () => {
       setShowInformation(true)
     }
   }
-
   const InformationItem = () => {
     return (
       <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 70, width: 300, padding: 5, marginTop: -30 }}>
@@ -252,6 +253,7 @@ const NewDelivery = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
       <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
         <View style={styles.backButtonWrapper}>
           <TouchableOpacity onPress={handleBack}>
@@ -311,6 +313,7 @@ const NewDelivery = () => {
           </View>
         </View>
       </View>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   )
 }
@@ -340,7 +343,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textBox: {
-    padding: 35,
+    padding: 15,
     paddingRight: 50,
     paddingTop: 10,
     height: 65,
