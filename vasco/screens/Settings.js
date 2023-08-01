@@ -83,15 +83,13 @@ const Settings = () => {
   }, [])
 
   const Item = ({ item }) => (
-    <View>
-      <View style={styles.emailListItem}>
-        <Text>{item}</Text>
-        <TouchableOpacity onPress={() => handleDelete(item)}>
-          <Ionicons name="trash-outline" size='20' color={'#FFC300'}/>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.emailListItem}>
+      <Text>{item}</Text>
+      <TouchableOpacity onPress={() => handleDelete(item)}>
+        <Ionicons name="trash-outline" size='20' color={'#FFC300'}/>
+      </TouchableOpacity>
     </View>
-  )
+  );
 
   const renderItem = ({ item }) => {
     return (
@@ -167,7 +165,12 @@ const Settings = () => {
       </View>
       <View style={styles.emailListWrapper}>
         <View style={styles.emailListItem}>
-          <FlatList data={mailingList} renderItem={renderItem} keyExtractor={item => item.id} />
+          <FlatList
+            data={mailingList}
+            renderItem={renderItem}
+            keyExtractor={item => item}
+            contentContainerStyle={{ flexGrow: 1 }}
+          />
         </View>
       </View>
       <View style={styles.centeredView}>
@@ -262,8 +265,10 @@ const styles = StyleSheet.create({
   emailListItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
     margin: 10,
-    zIndex: 10,
+    zIndex: 100,
   },
   modalView: {
     margin: 20,
