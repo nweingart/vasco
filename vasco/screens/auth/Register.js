@@ -1,10 +1,11 @@
 // ui imports
 import React, { useState, useEffect } from 'react'
-import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image} from 'react-native'
+import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image,  } from 'react-native'
+import { CheckBox } from 'react-native-elements'
 
 // firebase imports
 import { auth, db } from '../../firebase/Firebase'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signOut } from 'firebase/auth'
 import { setDoc, doc } from 'firebase/firestore'
 
 // navigation imports
@@ -16,21 +17,24 @@ const Register = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
+  const [staySignedIn, setStaySignedIn] = useState(false)
 
   const handleRegister = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then(userCredentials => {
-        const user = userCredentials.user
-        console.log(`logged in with email ${user.email}`)
-        setDoc(doc(db, "users", email), {
+        const user = userCredentials.user;
+        console.log(`logged in with email ${user.email}`);
+        setDoc(doc(db, "users", user.email), {
           email: email,
           firstName: firstName,
         }).then(() => {
-          console.log("Document successfully written!")
-        })
+          console.log("Document successfully written!");
+        });
       })
-      .catch(error => alert(error.message))
-  }
+      .catch(error => alert(error.message));
+  };
+
+
 
   const handleLogin = () => {
     navigation.navigate("Login")
@@ -41,9 +45,20 @@ const Register = () => {
       if (user) {
         navigation.replace("Home")
       }
-    })
-    return unsubscribe
-  }, [])
+    });
+    if (!staySignedIn) {
+      const signOutListener = auth.onAuthStateChanged(user => {
+        if (!user) {
+          signOut(auth);
+        }
+      });
+      return () => {
+        unsubscribe();
+        signOutListener();
+      };
+    }
+    return unsubscribe;
+  }, [staySignedIn]);
 
   return (
     <KeyboardAvoidingView
@@ -85,6 +100,13 @@ const Register = () => {
         >
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
+      </View>
+      <View style={{ marginTop: 15 }}>
+        <CheckBox
+          title='Stay signed in'
+          checked={staySignedIn}
+          onPress={() => setStaySignedIn(!staySignedIn)}
+        />
       </View>
       <View style={styles.register}>
         <Text style={styles.bottomText} onPress={handleLogin}>
@@ -133,7 +155,7 @@ const styles = StyleSheet.create({
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
+    width: 175,
     backgroundColor: '#FFC300',
     padding: 15,
     borderRadius: 10,
