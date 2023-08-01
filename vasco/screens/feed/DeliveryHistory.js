@@ -25,6 +25,8 @@ const DeliveryHistory = () => {
     fetchDeliveries();
   }, []);
 
+  console.log(deliveries)
+
   useEffect(() => {
     setFilteredDeliveries(
       deliveries.filter(item =>
@@ -59,13 +61,12 @@ const DeliveryHistory = () => {
       <Text style={styles.itemText}>{item.deliveryProject}</Text>
       <Text style={styles.itemText}>{item.deliveryVendor}</Text>
       <Text style={styles.itemText}>{item.deliveryNotes}</Text>
-      <Text style={styles.itemText}>{item.deliveryStatus}</Text>
-      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-        {item.deliveryPhotos.map((photoUrl, index) => (
+      <ScrollView style={{ marginTop: 15}} horizontal={true} showsHorizontalScrollIndicator={false}>
+        {item.deliveryPhotoDownloadUrls.concat(item.deliveryReceiptDownloadUrls || []).map((url, index) => (
           <Image
             key={index}
             style={{ width: 100, height: 100, marginHorizontal: 5, borderRadius: 5}}
-            source={{ uri: photoUrl }}
+            source={{ uri: url }}
           />
         ))}
       </ScrollView>
@@ -96,7 +97,6 @@ const DeliveryHistory = () => {
           </TouchableOpacity>
         </View>
       </View>
-
       <FlatList
         data={filteredDeliveries}
         renderItem={renderDelivery}
