@@ -16,7 +16,6 @@ const Register = () => {
   const navigation = useNavigation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
   const [staySignedIn, setStaySignedIn] = useState(false)
 
   const handleRegister = () => {
@@ -26,7 +25,6 @@ const Register = () => {
         console.log(`logged in with email ${user.email}`);
         setDoc(doc(db, "users", user.email), {
           email: email,
-          firstName: firstName,
         }).then(() => {
           console.log("Document successfully written!");
         });
@@ -85,12 +83,6 @@ const Register = () => {
           onChangeText={text => setPassword(text)}
           style={styles.input}
           secureTextEntry={true}
-        />
-        <TextInput
-          placeholder="first name"
-          value={firstName}
-          onChangeText={text => setFirstName(text)}
-          style={styles.input}
         />
       </View>
       <View>

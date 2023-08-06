@@ -31,9 +31,10 @@ const reducer = (state = initialState, action) => {
       return { ...state, photoDownloadURLs: action.payload }
     case 'STATUS_FILTER':
       return { ...state, statusFilter: action.payload }
-    case 'DATE_FILTER': {
-      return { ...state, dateFilter: action.payload }
-    }
+    case 'START_DATE':
+      return { ...state, startDate: action.payload }
+    case 'END_DATE':
+      return { ...state, endDate: action.payload }
     default:
       return state
   }
@@ -124,10 +125,17 @@ const setStatusFilter = (statusFilter) => {
   }
 }
 
-const setDateFiler = (dateFilter) => {
+const setStartDate = (startDate) => {
   return {
-    type: 'DATE_FILTER',
-    payload: dateFilter,
+    type: 'SET_START_DATE',
+    payload: startDate,
+  }
+}
+
+const setEndDate = (endDate) => {
+  return {
+    type: 'SET_END_DATE',
+    payload: endDate,
   }
 }
 
@@ -145,5 +153,6 @@ export {
   setReceiptsDownloadUrls,
   setPhotoDownloadUrls,
   setStatusFilter,
-  setDateFiler,
+  setStartDate,
+  setEndDate,
 }

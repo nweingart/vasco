@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import {Platform, View, Button, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import {Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import Ionicons from "@expo/vector-icons/Ionicons"
 
-const MyDatePicker = ({ onConfirm }) => {
+const MyDatePicker = ({ onConfirm, color, current }) => {
   const [date, setDate] = useState(new Date());
   const [tempDate, setTempDate] = useState(new Date());
   const [show, setShow] = useState(false);
@@ -24,7 +24,7 @@ const MyDatePicker = ({ onConfirm }) => {
 
   return (
     <View style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical:15, marginRight: 25 }}>
-      <TouchableOpacity onPress={showDatepicker}  style={styles.container}>
+      <TouchableOpacity onPress={showDatepicker}  style={{...styles.container, backgroundColor: color}}>
         <View style={styles.calendarIcon}>
           <Ionicons
             name="calendar-outline"
@@ -36,7 +36,7 @@ const MyDatePicker = ({ onConfirm }) => {
           <View style={{ marginTop: 45, marginLeft: -47}}>
             <DateTimePicker
               testID="dateTimePicker"
-              value={tempDate}
+              value={current ? current : tempDate}
               mode='date'
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={onChange}
@@ -44,7 +44,7 @@ const MyDatePicker = ({ onConfirm }) => {
             />
             <View style={{ display: 'flex', justifyContent: 'center',alignItems: 'center',}}>
               <TouchableOpacity style={{ display: 'flex', justifyContent: 'center',alignItems: 'center', backgroundColor: 'black', height: 35, width: 100, borderRadius: 5, marginVertical: 15 }} onPress={confirmDate}>
-                <Text style={{ color:  '#FFC300', fontWeight: 'bold' }}>Confirm</Text>
+                <Text style={{ color: color, fontWeight: 'bold' }}>Confirm</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -60,7 +60,6 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'row',
-    backgroundColor: '#FFC300',
     borderRadius: 7.5,
   },
   calendarIcon: {

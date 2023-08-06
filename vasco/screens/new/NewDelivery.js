@@ -44,7 +44,7 @@ const NewDelivery = () => {
   const [notes, setNotes] = useState('')
   const [project, setProject] = useState('')
   const [vendor, setVendor] = useState('')
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState('Not Approved')
   const [showInformation, setShowInformation] = useState(false)
 
   const email = auth.currentUser.email
@@ -60,6 +60,7 @@ const NewDelivery = () => {
   const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
 
   const addDelivery = async ({
+    email,
      deliveryReceipts,
      deliveryPhotos,
      deliveryDate,
@@ -72,6 +73,7 @@ const NewDelivery = () => {
   }) => {
     try {
       const docRef = await addDoc(collection(db, 'deliveries'), {
+        email,
         deliveryReceipts,
         deliveryPhotos,
         deliveryDate,
@@ -107,6 +109,11 @@ const NewDelivery = () => {
     dispatch(setDeliveryDate(date))
   };
 
+  const clearImages = () => {
+    dispatch(setDeliveryPhotos([]))
+    dispatch(setDeliveryReceipts([]))
+  }
+
   const handleCancel = () => {
     Alert.alert(
       'Cancel',
@@ -119,7 +126,10 @@ const NewDelivery = () => {
         },
         {
           text: 'Yes',
-          onPress: () => navigation.navigate('Home')
+          onPress: () => {
+            clearImages()
+            navigation.navigate('Home')
+          }
         }
       ],
       { cancelable: false }
@@ -140,6 +150,7 @@ const NewDelivery = () => {
           text: 'Yes',
           onPress: () => {
               addDelivery({
+                email,
                 deliveryReceipts,
                 deliveryPhotos,
                 deliveryDate,
@@ -256,12 +267,15 @@ const NewDelivery = () => {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
       <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
         <View style={styles.backButtonWrapper}>
-          <TouchableOpacity onPress={handleBack}>
+          <TouchableOpacity style={{ zIndex: 5 }} onPress={handleBack}>
             <Ionicons name='arrow-back-outline' size='25' color={'black'} />
           </TouchableOpacity>
+          <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
+            <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
+          </View>
           <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
           <RowItem onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
-          <DatePicker onConfirm={handleDateConfirm}/>
+          <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
           <View style={styles.textBoxWrapper}>
             <Text style={styles.textBoxText}>Project</Text>
               <TextInput

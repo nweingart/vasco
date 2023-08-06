@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from "react-native";
-import { setStatusFilter, setDateFiler } from "../../redux/redux";
-import { useDispatch } from "react-redux";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {setStatusFilter} from "../../redux/redux";
+import {useDispatch, useSelector} from "react-redux";
 import { useNavigation } from "@react-navigation/native";
+import DatePicker from "../../common/DatePicker";
+import { setStartDate, setEndDate } from "../../redux/redux";
 
 const Filter = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const [status, setStatus] = useState('');
+
+  const startDate = useSelector(state => state.startDate);
+  const endDate = useSelector(state => state.endDate);
+
   const handleSave = () => {
     dispatch(setStatusFilter(status));
-    dispatch(setDateFiler({ startDate, endDate }));
     navigation.goBack();
   }
 
@@ -17,9 +23,18 @@ const Filter = () => {
     navigation.goBack();
   }
 
-  const [status, setStatus] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const handleStartDateConfirm = date => {
+    dispatch(setStartDate(date));
+  };
+
+  const handleEndDateConfirm = date => {
+    if (date <= startDate) {
+      alert("End Date must be after Start Date.");
+    } else {
+      dispatch(setEndDate(date));
+    }
+  }
+
 
   return (
     <View style={styles.container}>
@@ -33,21 +48,11 @@ const Filter = () => {
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>Start</Text>
-        <TextInput
-          style={styles.input}
-          value={startDate}
-          onChangeText={setStartDate}
-          placeholder="Enter Start Date"
-        />
+        <DatePicker color={'white'} onConfirm={handleStartDateConfirm} current={startDate} />
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>End</Text>
-        <TextInput
-          style={styles.input}
-          value={endDate}
-          onChangeText={setEndDate}
-          placeholder="Enter End Date"
-        />
+        <DatePicker color={'white'} onConfirm={handleEndDateConfirm} current={endDate} />
       </View>
       <View style={styles.statusContainer}>
         <Text style={styles.statusLabel}>Status</Text>
@@ -79,10 +84,10 @@ const styles = StyleSheet.create({
   button: {
     padding: 10,
     borderRadius: 5,
-    backgroundColor: '#3A86FF',
+    backgroundColor: '#FFC300',
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: 'black',
     fontSize: 16,
     fontWeight: '600',
   },

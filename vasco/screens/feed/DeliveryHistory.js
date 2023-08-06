@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image} from 'react-native';
-import { db } from "../../firebase/Firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
+import { db, auth } from "../../firebase/Firebase";
+import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation} from "@react-navigation/native";
-
+import { useSelector } from "react-redux";
 
 const DeliveryHistory = () => {
   const [deliveries, setDeliveries] = useState([]);
@@ -12,11 +12,15 @@ const DeliveryHistory = () => {
   const [search, setSearch] = useState('');
   const navigation = useNavigation();
 
+  const userEmail = auth.currentUser.email
+  const startDate = useSelector(state => state.startDate);
+  const endDate = useSelector(state => state.endDate);
+
   useEffect(() => {
     const fetchDeliveries = async () => {
       const deliveriesCollection = collection(db, 'deliveries');
-      const deliveryQuery = query(deliveriesCollection, orderBy('deliveryDate', 'desc')); // This line was added.
-      const deliveryDocs = await getDocs(deliveryQuery); // This line was changed.
+      const deliveryQuery = query(deliveriesCollection, where('email', '==', userEmail), orderBy('deliveryDate', 'desc'))
+      const deliveryDocs = await getDocs(deliveryQuery);
       const deliveryData = deliveryDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setDeliveries(deliveryData);
       setFilteredDeliveries(deliveryData);
@@ -25,17 +29,19 @@ const DeliveryHistory = () => {
     fetchDeliveries();
   }, []);
 
-  console.log(deliveries)
-
   useEffect(() => {
-    setFilteredDeliveries(
-      deliveries.filter(item =>
-        item.deliveryProject.toLowerCase().includes(search.toLowerCase()) ||
-        item.deliveryVendor.toLowerCase().includes(search.toLowerCase()) ||
-        item.deliveryNotes.toLowerCase().includes(search.toLowerCase())
-      )
-    );
-  }, [search]);
+    let start = new Date(startDate);
+    let end = new Date(endDate);
+    if(start && end) {
+      setFilteredDeliveries(deliveries.filter(item => {
+        let deliveryDate = new Date(item.deliveryDate?.seconds * 1000);
+        return (deliveryDate >= start && deliveryDate <= end) &&
+          (item.deliveryProject.toLowerCase().includes(search.toLowerCase()) ||
+            item.deliveryVendor.toLowerCase().includes(search.toLowerCase()) ||
+            item.deliveryNotes.toLowerCase().includes(search.toLowerCase()));
+      }));
+    }
+  }, [search, startDate, endDate]);
 
   const handleBack = () => {
     navigation.goBack()
@@ -49,7 +55,7 @@ const DeliveryHistory = () => {
     <View style={styles.deliveryItem}>
       <View style={{ display: 'flex', flexDirection: 'row' }}>
         <Text style={{...styles.itemText, fontWeight: '600', marginBottom: 15 }}>
-          {new Date(item.deliveryDate.seconds * 1000).toDateString()}
+          {new Date(item?.deliveryDate?.seconds * 1000).toDateString()}
         </Text>
         <View style={{ marginLeft: 150 }}>
           {item.deliveryStatus === 'Approved' ?
@@ -62,7 +68,7 @@ const DeliveryHistory = () => {
       <Text style={styles.itemText}>{item.deliveryVendor}</Text>
       <Text style={styles.itemText}>{item.deliveryNotes}</Text>
       <ScrollView style={{ marginTop: 15}} horizontal={true} showsHorizontalScrollIndicator={false}>
-        {item.deliveryPhotoDownloadUrls.concat(item.deliveryReceiptDownloadUrls || []).map((url, index) => (
+        {item?.deliveryPhotoDownloadUrls.concat(item?.deliveryReceiptDownloadUrls || []).map((url, index) => (
           <Image
             key={index}
             style={{ width: 100, height: 100, marginHorizontal: 5, borderRadius: 5}}
@@ -97,6 +103,13 @@ const DeliveryHistory = () => {
           </TouchableOpacity>
         </View>
       </View>
+      {
+        startDate && endDate && !isNaN(startDate) && !isNaN(endDate) && (
+          <View>
+            <Text>Filtering between {startDate} and {endDate}</Text>
+          </View>
+        )
+      }
       <FlatList
         data={filteredDeliveries}
         renderItem={renderDelivery}
