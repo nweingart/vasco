@@ -19,6 +19,7 @@ const Login = () => {
       .then(userCredentials => {
         const user = userCredentials.user
         console.log(`logged in with email ${user.email}`)
+        navigation.replace("NewDelivery")
       })
       .catch(error => alert(error.message))
   }
@@ -26,15 +27,6 @@ const Login = () => {
   const handleRegister = () => {
     navigation.navigate("Register")
   }
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (user) {
-        navigation.replace("NewDelivery")
-      }
-    })
-    return unsubscribe
-  }, [])
 
   return (
     <KeyboardAvoidingView

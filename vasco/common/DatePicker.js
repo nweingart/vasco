@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import Ionicons from "@expo/vector-icons/Ionicons"
@@ -7,6 +7,11 @@ const MyDatePicker = ({ onConfirm, color, current }) => {
   const [date, setDate] = useState(new Date());
   const [tempDate, setTempDate] = useState(new Date());
   const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    setDate(current || new Date());
+    setTempDate(current || new Date());
+  }, [current]);
 
   const onChange = (event, selectedDate) => {
     setTempDate(selectedDate || date);

@@ -34,7 +34,7 @@ const App = () => {
       setIsAuthenticated(!!user);
     });
 
-    return () => unsubscribe(); // unsubscribe to the event on component unmount
+    return () => unsubscribe();
   }, []);
 
   return (

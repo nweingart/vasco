@@ -265,68 +265,68 @@ const NewDelivery = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
-        <View style={styles.backButtonWrapper}>
-          <TouchableOpacity style={{ zIndex: 5 }} onPress={handleBack}>
-            <Ionicons name='arrow-back-outline' size='25' color={'black'} />
-          </TouchableOpacity>
-          <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
-            <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
-          </View>
-          <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
-          <RowItem onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
-          <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
-          <View style={styles.textBoxWrapper}>
-            <Text style={styles.textBoxText}>Project</Text>
-              <TextInput
-                style={{ ...styles.textBox, height: 50 }}
-                value={project}
-                onChangeText={handleProjectChange}
-                autoCapitalize="sentences"
-              />
-          </View>
-          <View style={styles.textBoxWrapper}>
-            <Text style={styles.textBoxText}>Vendor</Text>
-              <TextInput
-                style={{ ...styles.textBox, height: 50 }}
-                value={vendor}
-                onChangeText={handleVendorChange}
-                autoCapitalize="sentences"
-              />
-          </View>
-          <View style={styles.textBoxWrapper}>
-            <Text style={styles.textBoxText}>Notes</Text>
-              <TextInput
-                style={ styles.textBox }
-                value={notes}
-                onChangeText={handleNotesChange}
-                autoCapitalize="sentences"
-              />
-          </View>
-          <View style={{ marginTop: 50 }}>
-            <View style={{ display: 'flex', flexDirection: 'row'}}>
-              <Ionicons onPress={handleInformation} name="information-circle-outline" size='25' color={'black'} style={{ marginTop: -10 }} />
-              <InformationItem />
+        <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
+          <View style={styles.backButtonWrapper}>
+            <TouchableOpacity style={{ zIndex: 5 }} onPress={handleBack}>
+              <Ionicons name='arrow-back-outline' size='25' color={'black'} />
+            </TouchableOpacity>
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
+              <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
             </View>
-            <View style={styles.buttonsWrapper}>
-              <TouchableOpacity style={{...styles.button, marginLeft: -15, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
-                <Text style={styles.buttonText}>Approved</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{...styles.button, marginLeft: 30, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={handleStatus}>
-                <Text style={styles.buttonText}>Not Approved</Text>
-              </TouchableOpacity>
+            <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
+            <RowItem onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
+            <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
+            <View style={styles.textBoxWrapper}>
+              <Text style={styles.textBoxText}>Project</Text>
+                <TextInput
+                  style={{ ...styles.textBox, height: 50 }}
+                  value={project}
+                  onChangeText={handleProjectChange}
+                  autoCapitalize="sentences"
+                />
             </View>
-            <View style={styles.buttonsWrapper}>
-              <TouchableOpacity style={{...styles.button, marginLeft: -15}} onPress={handleCancel}>
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{...styles.button, marginLeft: 30}} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Submit</Text>
-              </TouchableOpacity>
+            <View style={styles.textBoxWrapper}>
+              <Text style={styles.textBoxText}>Vendor</Text>
+                <TextInput
+                  style={{ ...styles.textBox, height: 50 }}
+                  value={vendor}
+                  onChangeText={handleVendorChange}
+                  autoCapitalize="sentences"
+                />
+            </View>
+            <View style={styles.textBoxWrapper}>
+              <Text style={styles.textBoxText}>Notes</Text>
+                <TextInput
+                  style={ styles.textBox }
+                  value={notes}
+                  onChangeText={handleNotesChange}
+                  autoCapitalize="sentences"
+                />
+            </View>
+            <View style={{ marginTop: 50 }}>
+              <View style={{ display: 'flex', flexDirection: 'row'}}>
+                <Ionicons onPress={handleInformation} name="information-circle-outline" size='25' color={'black'} style={{ marginTop: -10 }} />
+                <InformationItem />
+              </View>
+              <View style={styles.buttonsWrapper}>
+                <TouchableOpacity style={{...styles.button, marginLeft: -15, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
+                  <Text style={styles.buttonText}>Approved</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{...styles.button, marginLeft: 30, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={handleStatus}>
+                  <Text style={styles.buttonText}>Not Approved</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonsWrapper}>
+                <TouchableOpacity style={{...styles.button, marginLeft: -15}} onPress={handleCancel}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{...styles.button, marginLeft: 30}} onPress={handleSubmit}>
+                  <Text style={styles.buttonText}>Submit</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-      </View>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   )

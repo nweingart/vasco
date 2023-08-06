@@ -4,22 +4,27 @@ import { db, auth } from "../../firebase/Firebase";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation} from "@react-navigation/native";
+import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+import { Badge } from 'react-native-elements';
+import { setStatusFilter, setStartDateFilter, setEndDateFilter } from "../../redux/redux";
 
 const DeliveryHistory = () => {
   const [deliveries, setDeliveries] = useState([]);
   const [filteredDeliveries, setFilteredDeliveries] = useState([]);
   const [search, setSearch] = useState('');
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
-  const userEmail = auth.currentUser.email
-  const startDate = useSelector(state => state.startDate);
-  const endDate = useSelector(state => state.endDate);
+  const userEmail = auth.currentUser.email;
+  const startDate = useSelector(state => state.startDateFilter);
+  const endDate = useSelector(state => state.endDateFilter);
+  const status = useSelector(state => state.statusFilter);
 
   useEffect(() => {
     const fetchDeliveries = async () => {
       const deliveriesCollection = collection(db, 'deliveries');
-      const deliveryQuery = query(deliveriesCollection, where('email', '==', userEmail), orderBy('deliveryDate', 'desc'))
+      const deliveryQuery = query(deliveriesCollection, where('email', '==', userEmail), orderBy('deliveryDate', 'desc'));
       const deliveryDocs = await getDocs(deliveryQuery);
       const deliveryData = deliveryDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setDeliveries(deliveryData);
@@ -30,18 +35,35 @@ const DeliveryHistory = () => {
   }, []);
 
   useEffect(() => {
-    let start = new Date(startDate);
-    let end = new Date(endDate);
-    if(start && end) {
-      setFilteredDeliveries(deliveries.filter(item => {
-        let deliveryDate = new Date(item.deliveryDate?.seconds * 1000);
-        return (deliveryDate >= start && deliveryDate <= end) &&
-          (item.deliveryProject.toLowerCase().includes(search.toLowerCase()) ||
-            item.deliveryVendor.toLowerCase().includes(search.toLowerCase()) ||
-            item.deliveryNotes.toLowerCase().includes(search.toLowerCase()));
-      }));
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+    const deliveryStatus = status;
+
+    let filtered = deliveries;
+
+    if (start && end) {
+      filtered = deliveries.filter(item => {
+        const deliveryDate = new Date(item.deliveryDate?.seconds * 1000);
+        return deliveryDate >= start && deliveryDate <= end;
+      });
     }
-  }, [search, startDate, endDate]);
+
+    if (deliveryStatus) {
+      filtered = filtered.filter(item => item.deliveryStatus === deliveryStatus);
+    }
+
+    setFilteredDeliveries(filtered);
+  }, [startDate, endDate, status, deliveries]);
+
+  useEffect(() => {
+    const filtered = filteredDeliveries.filter(item =>
+      item.deliveryProject?.toLowerCase().includes(search.toLowerCase()) ||
+      item.deliveryVendor?.toLowerCase().includes(search.toLowerCase()) ||
+      item.deliveryNotes?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    setFilteredDeliveries(filtered);
+  }, [search]);
 
   const handleBack = () => {
     navigation.goBack()
@@ -50,6 +72,18 @@ const DeliveryHistory = () => {
   const handleFilter = () => {
     navigation.navigate('Filter')
   }
+
+  const handleClearStartDate = () => {
+    dispatch(setStartDateFilter(null));
+  };
+
+  const handleClearEndDate = () => {
+    dispatch(setEndDateFilter(null));
+  };
+
+  const handleClearStatus = () => {
+    dispatch(setStatusFilter(''));
+  };
 
   const renderDelivery = ({ item }) => (
     <View style={styles.deliveryItem}>
@@ -99,17 +133,42 @@ const DeliveryHistory = () => {
         </View>
         <View style={styles.rightIconContainer}>
           <TouchableOpacity onPress={handleFilter}>
-            <Ionicons name="options" size={35} color={'black'} />
+            <Ionicons name="options" size={35} color={endDate || startDate ? '#FFC300' : 'black'} />
           </TouchableOpacity>
         </View>
       </View>
-      {
-        startDate && endDate && !isNaN(startDate) && !isNaN(endDate) && (
-          <View>
-            <Text>Filtering between {startDate} and {endDate}</Text>
-          </View>
-        )
-      }
+      <View style={styles.filterContainer}>
+        <Text style={styles.filterLabel}>Filters: </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {startDate &&
+            <TouchableOpacity onPress={handleClearStartDate}>
+              <Badge
+                value={`Start Date: ${startDate.toDateString()} x`}
+                badgeStyle={styles.badge}
+                textStyle={styles.badgeText}
+              />
+            </TouchableOpacity>
+          }
+          {endDate &&
+            <TouchableOpacity onPress={handleClearEndDate}>
+              <Badge
+                value={`End Date: ${endDate.toDateString()} x`}
+                badgeStyle={styles.badge}
+                textStyle={styles.badgeText}
+              />
+            </TouchableOpacity>
+          }
+          {status &&
+            <TouchableOpacity onPress={handleClearStatus}>
+              <Badge
+                value={`Status: ${status} x`}
+                badgeStyle={styles.badge}
+                textStyle={styles.badgeText}
+              />
+            </TouchableOpacity>
+          }
+        </ScrollView>
+      </View>
       <FlatList
         data={filteredDeliveries}
         renderItem={renderDelivery}
@@ -117,6 +176,7 @@ const DeliveryHistory = () => {
       />
     </View>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -175,6 +235,27 @@ const styles = StyleSheet.create({
   rightIconContainer: {
     position: 'absolute',
     right: 15, // Desired space from the left
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  filterLabel: {
+    fontWeight: 'bold',
+    marginRight: 5,
+  },
+  badge: {
+    marginVertical: 5,
+    height: 30,
+    padding: 10,
+    backgroundColor: '#FFC300',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  badgeText: {
+    fontSize: 20,
   },
 });
 

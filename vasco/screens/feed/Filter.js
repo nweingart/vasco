@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import {setStatusFilter} from "../../redux/redux";
 import {useDispatch, useSelector} from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import DatePicker from "../../common/DatePicker";
-import { setStartDate, setEndDate } from "../../redux/redux";
+import { setStartDateFilter, setEndDateFilter, setStatusFilter } from "../../redux/redux";
 
 const Filter = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const [status, setStatus] = useState('');
+  const statusFilter = useSelector(state => state.statusFilter);  // Add this line
 
-  const startDate = useSelector(state => state.startDate);
-  const endDate = useSelector(state => state.endDate);
+  const [status, setStatus] = useState(statusFilter || '');  // Initialize to current filter
+
+  const startDate = useSelector(state => state.startDateFilter);
+  const endDate = useSelector(state => state.endDateFilter);
 
   const handleSave = () => {
     dispatch(setStatusFilter(status));
@@ -24,14 +25,30 @@ const Filter = () => {
   }
 
   const handleStartDateConfirm = date => {
-    dispatch(setStartDate(date));
+    dispatch(setStartDateFilter(date));
   };
 
   const handleEndDateConfirm = date => {
     if (date <= startDate) {
       alert("End Date must be after Start Date.");
     } else {
-      dispatch(setEndDate(date));
+      dispatch(setEndDateFilter(date));
+    }
+  }
+
+  const setApprovedOpacity = () => {
+    if ( status === 'Approved'){
+      return 1
+    } else {
+      return 0.5
+    }
+  }
+
+  const setNotApprovedOpacity = () => {
+    if ( status === 'Not Approved'){
+      return 1
+    } else {
+      return 0.5
     }
   }
 
@@ -57,10 +74,10 @@ const Filter = () => {
       <View style={styles.statusContainer}>
         <Text style={styles.statusLabel}>Status</Text>
         <View style={styles.statusOptionsContainer}>
-          <TouchableOpacity style={styles.statusOptionButton} onPress={() => setStatus('Approved')}>
+          <TouchableOpacity style={{ ...styles.statusOptionButton, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={() => setStatus('Approved')}>
             <Text style={{ ...styles.statusOption, color: 'white'}}>Approved</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.statusOptionButton, {backgroundColor: 'red'}]} onPress={() => setStatus('Not Approved')}>
+          <TouchableOpacity style={{ ...styles.statusOptionButton, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={() => setStatus('Not Approved')}>
             <Text style={{ ...styles.statusOption, color: 'white'}}>Not Approved</Text>
           </TouchableOpacity>
         </View>
