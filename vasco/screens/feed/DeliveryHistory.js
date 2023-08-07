@@ -6,7 +6,6 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation} from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { Badge } from 'react-native-elements';
 import { setStatusFilter, setStartDateFilter, setEndDateFilter } from "../../redux/redux";
 
 const DeliveryHistory = () => {
@@ -133,40 +132,29 @@ const DeliveryHistory = () => {
         </View>
         <View style={styles.rightIconContainer}>
           <TouchableOpacity onPress={handleFilter}>
-            <Ionicons name="options" size={35} color={endDate || startDate ? '#FFC300' : 'black'} />
+            <Ionicons name="options" size={35} color={endDate || startDate || status ? '#FFC300' : 'black'} />
           </TouchableOpacity>
         </View>
       </View>
       <View style={styles.filterContainer}>
-        <Text style={styles.filterLabel}>Filters: </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {startDate &&
-            <TouchableOpacity onPress={handleClearStartDate}>
-              <Badge
-                value={`Start Date: ${startDate.toDateString()} x`}
-                badgeStyle={styles.badge}
-                textStyle={styles.badgeText}
-              />
+        <ScrollView horizontal contentContainerStyle={styles.filterBadgeContainer}>
+          <Text style={styles.filterLabel}>Filters: </Text>
+          {startDate && endDate && (
+            <TouchableOpacity style={styles.badge} onPress={() => {dispatch(setStartDateFilter(null)); dispatch(setEndDateFilter(null))}}>
+              <Text style={styles.badgeText}>🗓 {startDate.toDateString()} - {endDate.toDateString()}</Text>
+              <View style={{ marginLeft: 10, marginTop: 5 }}>
+                <Ionicons name={'close-circle'} size={15} color={'black'} />
+              </View>
             </TouchableOpacity>
-          }
-          {endDate &&
-            <TouchableOpacity onPress={handleClearEndDate}>
-              <Badge
-                value={`End Date: ${endDate.toDateString()} x`}
-                badgeStyle={styles.badge}
-                textStyle={styles.badgeText}
-              />
+          )}
+          {status && (
+            <TouchableOpacity style={styles.badge} onPress={() => dispatch(setStatusFilter(null))}>
+              <Text style={styles.badgeText}>📝 {status}</Text>
+              <View style={{ marginLeft: 10, marginTop: 5 }}>
+                <Ionicons name={'close-circle'} size={15} color={'black'} />
+              </View>
             </TouchableOpacity>
-          }
-          {status &&
-            <TouchableOpacity onPress={handleClearStatus}>
-              <Badge
-                value={`Status: ${status} x`}
-                badgeStyle={styles.badge}
-                textStyle={styles.badgeText}
-              />
-            </TouchableOpacity>
-          }
+          )}
         </ScrollView>
       </View>
       <FlatList
@@ -237,25 +225,34 @@ const styles = StyleSheet.create({
     right: 15, // Desired space from the left
   },
   filterContainer: {
+    height: 90,// Sets the maximum height that the ScrollView can take
     flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#e8e7e7',
   },
   filterLabel: {
     fontWeight: 'bold',
-    marginRight: 5,
+    marginLeft: 25,
+  },
+  filterBadgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 50,
   },
   badge: {
     marginVertical: 5,
-    height: 30,
+    height: 50,
     padding: 10,
     backgroundColor: '#FFC300',
+    flexDirection: 'row',
     justifyContent: 'center',
     borderRadius: 5,
     marginLeft: 10,
   },
   badgeText: {
-    fontSize: 20,
+    marginTop: 4,
+    fontSize: 14,
   },
 });
 
