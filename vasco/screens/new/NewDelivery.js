@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Platform,
+  ScrollView,
 } from 'react-native'
 import RowItem from './RowItem'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -58,6 +59,7 @@ const NewDelivery = () => {
   const deliveryStatus = useSelector(state => state.deliveryStatus)
   const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
   const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
+
 
   const addDelivery = async ({
     email,
@@ -256,7 +258,7 @@ const NewDelivery = () => {
   }
   const InformationItem = () => {
     return (
-      <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 70, width: 300, padding: 5, marginTop: -30 }}>
+      <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 70, width: 300, padding: 5, marginTop: 5 }}>
         <Text style={{ color: showInformation ? 'black' : 'white' }} >If all items listed on receipt are included and in good condition, please press approve. If not please press not approve.</Text>
       </View>
     )
@@ -265,7 +267,7 @@ const NewDelivery = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-        <View onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
+        <ScrollView onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
           <View style={styles.backButtonWrapper}>
             <TouchableOpacity style={{ zIndex: 5 }} onPress={handleBack}>
               <Ionicons name='arrow-back-outline' size='25' color={'black'} />
@@ -273,8 +275,8 @@ const NewDelivery = () => {
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
               <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
             </View>
-            <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
-            <RowItem onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
+            <RowItem invalid={deliveryReceipts.length <= 0} onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
+            <RowItem invalid={deliveryPhotos.length <= 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
             <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
             <View style={styles.textBoxWrapper}>
               <Text style={styles.textBoxText}>Project</Text>
@@ -295,6 +297,7 @@ const NewDelivery = () => {
                 />
             </View>
             <View style={styles.textBoxWrapper}>
+              {status === 'Not Approved' && notes === '' && <Ionicons name="medical" size={15} color="red" style={{ marginLeft: -325, marginBottom: -20, marginTop: 10 }} />}
               <Text style={styles.textBoxText}>Notes</Text>
                 <TextInput
                   style={ styles.textBox }
@@ -303,10 +306,21 @@ const NewDelivery = () => {
                   autoCapitalize="sentences"
                 />
             </View>
-            <View style={{ marginTop: 50 }}>
+            <View style={{ borderWidth: 2, borderColor: 'gray', height: 160, marginTop: 20, width: 350, marginLeft: -10, borderRadius: 10 }}>
               <View style={{ display: 'flex', flexDirection: 'row'}}>
-                <Ionicons onPress={handleInformation} name="information-circle-outline" size='25' color={'black'} style={{ marginTop: -10 }} />
-                <InformationItem />
+                <Ionicons onPress={handleInformation} name="information-circle-outline" size='25' color={'black'} />
+                {
+                  showInformation ?
+                    <InformationItem />
+                    :
+                    <View style={{ display: 'flex', flexDirection: 'row', marginTop: 5, marginLeft: 5}}>
+                      <Text>Approval Status</Text>
+                      <View style={{ marginLeft: 5 }}>
+                        <Ionicons name="medical" size={15} color="red"/>
+                      </View>
+                    </View>
+
+                }
               </View>
               <View style={styles.buttonsWrapper}>
                 <TouchableOpacity style={{...styles.button, marginLeft: -15, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
@@ -316,17 +330,17 @@ const NewDelivery = () => {
                   <Text style={styles.buttonText}>Not Approved</Text>
                 </TouchableOpacity>
               </View>
-              <View style={styles.buttonsWrapper}>
-                <TouchableOpacity style={{...styles.button, marginLeft: -15}} onPress={handleCancel}>
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{...styles.button, marginLeft: 30}} onPress={handleSubmit}>
-                  <Text style={styles.buttonText}>Submit</Text>
-                </TouchableOpacity>
-              </View>
+            </View>
+            <View style={styles.buttonsWrapper}>
+              <TouchableOpacity style={{...styles.button, marginLeft: -15}} onPress={handleCancel}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{...styles.button, marginLeft: 30}} onPress={handleSubmit}>
+                <Text style={styles.buttonText}>Submit</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   )
@@ -375,7 +389,7 @@ const styles = StyleSheet.create({
   },
   buttonsWrapper: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: 10,
     marginHorizontal: 20,
   },
   button: {

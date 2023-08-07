@@ -64,6 +64,12 @@ const DeliveryHistory = () => {
     setFilteredDeliveries(filtered);
   }, [search]);
 
+  const handleClearSearch = () => {
+    setSearch('');
+    setFilteredDeliveries(deliveries);
+  };
+
+
   const handleBack = () => {
     navigation.goBack()
   }
@@ -127,6 +133,11 @@ const DeliveryHistory = () => {
           placeholder="Search"
           style={styles.input}
         />
+        <View style={styles.clearSearchContainer}>
+          <TouchableOpacity onPress={handleClearSearch}>
+            <Ionicons name="close-circle" size={20} color="black" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.leftIconContainer}>
           <Ionicons name="search" size={35} color={'black'} />
         </View>
@@ -164,7 +175,6 @@ const DeliveryHistory = () => {
       />
     </View>
   );
-
 };
 
 const styles = StyleSheet.create({
@@ -254,6 +264,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 14,
   },
+  clearSearchContainer: {
+    position: 'absolute',
+    right: 60,
+    top: '50%',
+    transform: [{ translateY: -10 }]
+  }
 });
 
 export default DeliveryHistory;

@@ -1,25 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import {Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import DateTimePicker from '@react-native-community/datetimepicker'
-import Ionicons from "@expo/vector-icons/Ionicons"
+import React, { useState } from 'react';
+import {Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-const MyDatePicker = ({ onConfirm, color, current }) => {
-  const [date, setDate] = useState(new Date());
+const MyDatePicker = ({ onConfirm, color }) => {
+  const [date, setDate] = useState(null);
   const [tempDate, setTempDate] = useState(new Date());
   const [show, setShow] = useState(false);
 
-  useEffect(() => {
-    setDate(current || new Date());
-    setTempDate(current || new Date());
-  }, [current]);
-
   const onChange = (event, selectedDate) => {
-    setTempDate(selectedDate || date);
+    setTempDate(selectedDate || tempDate);
   };
 
   const confirmDate = () => {
     setDate(tempDate);
-    onConfirm(tempDate)
+    onConfirm(tempDate);
     setShow(false);
   };
 
@@ -30,36 +25,40 @@ const MyDatePicker = ({ onConfirm, color, current }) => {
   return (
     <View style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical:15, marginRight: 25 }}>
       <TouchableOpacity onPress={showDatepicker}  style={{...styles.container, backgroundColor: color}}>
-        <View style={styles.calendarIcon}>
-          <Ionicons
-            name="calendar-outline"
-            size={25}
-            color="black"
-          />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {!date &&
+            <Ionicons name="medical" size={15} color="red" style={{ marginLeft: 5, marginRight: 5 }} />}
+          <View style={{ marginLeft: date ? 25 : 0 }}>
+            <Ionicons
+              name="calendar-outline"
+              size={25}
+              color="black"
+            />
+          </View>
         </View>
         {show ? (
-          <View style={{ marginTop: 45, marginLeft: -47}}>
+          <View style={{ marginLeft: -47.5}}>
             <DateTimePicker
               testID="dateTimePicker"
-              value={current ? current : tempDate}
+              value={tempDate}
               mode='date'
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={onChange}
               style={{backgroundColor: 'white'}}
             />
-            <View style={{ display: 'flex', justifyContent: 'center',alignItems: 'center',}}>
-              <TouchableOpacity style={{ display: 'flex', justifyContent: 'center',alignItems: 'center', backgroundColor: 'black', height: 35, width: 100, borderRadius: 5, marginVertical: 15 }} onPress={confirmDate}>
-                <Text style={{ color: color, fontWeight: 'bold' }}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'black', width: 75, height: 40, marginLeft: 135, marginTop: 10, marginBottom: 10, borderRadius: 10}} onPress={confirmDate}>
+              <Text style={{ color: 'white'}}>Confirm</Text>
+            </TouchableOpacity>
           </View>
         ) : (
-          <Text style={styles.calendarText}>{date.toDateString()}</Text>
+          <Text style={styles.calendarText}>{date ? date.toDateString() : "Select Date"}</Text>
         )}
       </TouchableOpacity>
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -71,8 +70,8 @@ const styles = StyleSheet.create({
     marginLeft: 25,
   },
   calendarText: {
-    fontSize: 16,
-    marginLeft: 50,
+    fontSize: 14,
+    marginLeft: 75,
     fontWeight: 500,
     marginTop: 5,
   }

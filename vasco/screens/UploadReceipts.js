@@ -13,11 +13,11 @@ const UploadReceipts = () => {
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const deliveryPhotos = useSelector(state => state.deliveryPhotos);
+  const deliveryReceipts = useSelector(state => state.deliveryReceipts);
 
   useEffect(() => {
-    if (deliveryPhotos?.length > 0) {
-      setImages(deliveryPhotos);
+    if (deliveryReceipts?.length > 0) {
+      setImages(deliveryReceipts);
     }
   }, []);
 
