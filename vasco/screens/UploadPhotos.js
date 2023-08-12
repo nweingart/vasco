@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, FlatList, Image } from 'react-native';
+import { Alert, View, StyleSheet, TouchableOpacity, Text, FlatList, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation} from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -7,7 +7,6 @@ import { setDeliveryPhotos } from "../redux/redux";
 import { useDispatch, useSelector } from "react-redux";
 import { setPhotoDownloadUrls } from "../redux/redux";
 import { uploadImageToFirebase } from "../utils/uploadImage";
-
 
 const UploadPhotos = () => {
   const [images, setImages] = useState([]);
@@ -40,24 +39,47 @@ const UploadPhotos = () => {
 
 
   const takePicture = async () => {
-    if (images.length < 5) {
-      let result = await ImagePicker.launchCameraAsync();
+    try {
+      // Check for camera permissions
+      const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
 
-      if (!result.cancelled) {
-        setImages([...images, result.uri]);
+      if (cameraPermission.status !== 'granted') {
+        Alert.alert('Permission required', 'Camera permissions are required to take a picture.');
+        return;
       }
+
+      if (images.length < 5) {
+        let result = await ImagePicker.launchCameraAsync();
+
+        if (!result.cancelled) {
+          setImages([...images, result.uri]);
+        }
+      }
+    } catch (error) {
+      console.error("Error launching camera:", error);
     }
   };
 
   const pickImage = async () => {
-    if (images.length < 5) {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      });
+    try {
+      const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      if (!result.cancelled) {
-        setImages([...images, result.uri]);
+      if (mediaLibraryPermission.status !== 'granted') {
+        Alert.alert('Permission required', 'Media library permissions are required to pick an image.');
+        return;
       }
+
+      if (images.length < 5) {
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        });
+
+        if (!result.cancelled) {
+          setImages([...images, result.uri]);
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing media library:", error);
     }
   };
 

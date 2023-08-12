@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-const MyDatePicker = ({ onConfirm, color }) => {
+const MyDatePicker = ({ onConfirm, color, current }) => {
   const [date, setDate] = useState(null);
   const [tempDate, setTempDate] = useState(new Date());
   const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    setDate(current);
+    setTempDate(current || new Date());
+  }, [current]);
 
   const onChange = (event, selectedDate) => {
     setTempDate(selectedDate || tempDate);
@@ -26,9 +31,7 @@ const MyDatePicker = ({ onConfirm, color }) => {
     <View style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical:15, marginRight: 25 }}>
       <TouchableOpacity onPress={showDatepicker}  style={{...styles.container, backgroundColor: color}}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {!date &&
-            <Ionicons name="medical" size={15} color="red" style={{ marginLeft: 5, marginRight: 5 }} />}
-          <View style={{ marginLeft: date ? 25 : 0 }}>
+          <View style={{ marginLeft: 15 }}>
             <Ionicons
               name="calendar-outline"
               size={25}
@@ -57,8 +60,6 @@ const MyDatePicker = ({ onConfirm, color }) => {
     </View>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {

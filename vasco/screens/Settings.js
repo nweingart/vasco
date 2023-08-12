@@ -14,7 +14,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useNavigation } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
-import { setEmailReceipts } from '../redux/redux'
+import { setEmailReceipts, setMailingList } from '../redux/redux'
 import { db, auth } from '../firebase/Firebase'
 import { setDoc, doc, getDoc } from 'firebase/firestore'
 
@@ -22,7 +22,7 @@ const Settings = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [modalVisible, setModalVisible] = React.useState(false)
   const [email, setEmail] = React.useState([])
-  const [mailingList, setMailingList] = React.useState([])
+  const [localMailingList, setLocalMailingList] = React.useState([])
   const [showInformation, setShowInformation] = React.useState(false)
 
   const userEmail = auth.currentUser.email
@@ -37,8 +37,10 @@ const Settings = () => {
 
   const handleAdd = () => {
     if (checkEmail(email)) {
-      setMailingList(mailingList.concat(email))
-      setDoc(mailingListRef, { mailingList: mailingList.concat(email) }, { merge: true })
+      const updatedMailingList = localMailingList.concat(email);
+      setLocalMailingList(updatedMailingList);
+
+      setDoc(mailingListRef, { mailingList: updatedMailingList }, { merge: true })
         .then(() => {
           Alert.alert('Great Success!', 'Email added to mailing list')
           setEmail('')
@@ -46,18 +48,18 @@ const Settings = () => {
         })
         .catch((error) => {
           console.error("Error updating document: ", error);
-        })
+        });
     } else {
       Alert.alert(
         "Invalid Email",
         "Please enter a valid email address",
-      )
+      );
     }
   }
 
   const handleDelete = (email) => {
-    const newMailingList = mailingList.filter((item) => item !== email)
-    setMailingList(newMailingList)
+    const newMailingList = localMailingList.filter((item) => item !== email);
+    setLocalMailingList(newMailingList);
     setDoc(mailingListRef, { mailingList: newMailingList }, { merge: true })
       .then(() => {
         Alert.alert('Great Success!', 'Email removed from mailing list')
@@ -72,15 +74,15 @@ const Settings = () => {
   React.useEffect(() => {
     const getMailingList = async () => {
       const docSnap = await getDoc(mailingListRef);
-      if (docSnap.exists()) {
+      if (docSnap.exists() && docSnap.data().mailingList) {
         console.log("Document data:", docSnap.data());
-        setMailingList(docSnap.data().mailingList)
+        setLocalMailingList(docSnap.data().mailingList); // Adjusting the function call here
       } else {
-        console.log("No such document!");
+        console.log("No such document or mailingList property doesn't exist!");
       }
     }
-    getMailingList()
-  }, [])
+    getMailingList();
+  }, []);
 
   const Item = ({ item }) => (
     <View style={styles.emailListItem}>
@@ -126,6 +128,7 @@ const Settings = () => {
   }
 
   const handleBack = () => {
+    dispatch(setMailingList(localMailingList))
     if (isEnabled) {
       dispatch(setEmailReceipts(true))
     } else {
@@ -166,7 +169,7 @@ const Settings = () => {
       <View style={styles.emailListWrapper}>
         <View style={styles.emailListItem}>
           <FlatList
-            data={mailingList}
+            data={localMailingList}
             renderItem={renderItem}
             keyExtractor={item => item}
             contentContainerStyle={{ flexGrow: 1 }}

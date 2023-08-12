@@ -8,15 +8,19 @@ import { setStartDateFilter, setEndDateFilter, setStatusFilter } from "../../red
 const Filter = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const statusFilter = useSelector(state => state.statusFilter);  // Add this line
 
-  const [status, setStatus] = useState(statusFilter || '');  // Initialize to current filter
+  const statusFilter = useSelector(state => state.statusFilter);
+  const startDateFilter = useSelector(state => state.startDateFilter);
+  const endDateFilter = useSelector(state => state.endDateFilter);
 
-  const startDate = useSelector(state => state.startDateFilter);
-  const endDate = useSelector(state => state.endDateFilter);
+  const [status, setStatus] = useState(statusFilter || '');
+  const [startDate, setStartDate] = useState(startDateFilter || null);
+  const [endDate, setEndDate] = useState(endDateFilter || null);
 
   const handleSave = () => {
     dispatch(setStatusFilter(status));
+    dispatch(setStartDateFilter(startDate));
+    dispatch(setEndDateFilter(endDate));
     navigation.goBack();
   }
 
@@ -25,39 +29,47 @@ const Filter = () => {
   }
 
   const handleStartDateConfirm = date => {
-    dispatch(setStartDateFilter(date));
+    setStartDate(date);
   };
 
   const handleEndDateConfirm = date => {
     if (date <= startDate) {
       alert("End Date must be after Start Date.");
     } else {
-      dispatch(setEndDateFilter(date));
+      setEndDate(date);
     }
   }
 
   const setApprovedOpacity = () => {
-    if ( status === 'Approved'){
-      return 1
+    if (status === 'Approved'){
+      return 1;
     } else {
-      return 0.5
+      return 0.5;
     }
   }
 
   const setNotApprovedOpacity = () => {
-    if ( status === 'Not Approved'){
-      return 1
+    if (status === 'Not Approved'){
+      return 1;
     } else {
-      return 0.5
+      return 0.5;
     }
   }
 
+  const handleClearFilters = () => {
+    setStatus('');
+    setStartDate(null);
+    setEndDate(null);
+    dispatch(setStatusFilter(''));
+    dispatch(setStartDateFilter(null));
+    dispatch(setEndDateFilter(null));
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleBack}>
-          <Text style={styles.buttonText}>Cancel</Text>
+          <Text style={styles.buttonText}>Back</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleSave}>
           <Text style={styles.buttonText}>Save</Text>
@@ -81,6 +93,9 @@ const Filter = () => {
             <Text style={{ ...styles.statusOption, color: 'white'}}>Not Approved</Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity style={{ ...styles.button, marginTop: 20 }} onPress={handleClearFilters}>
+          <Text style={styles.buttonText}>Clear Filters</Text>
+        </TouchableOpacity>
       </View>
     </View>
   )

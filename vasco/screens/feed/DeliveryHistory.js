@@ -143,7 +143,9 @@ const DeliveryHistory = () => {
         </View>
         <View style={styles.rightIconContainer}>
           <TouchableOpacity onPress={handleFilter}>
-            <Ionicons name="options" size={35} color={endDate || startDate || status ? '#FFC300' : 'black'} />
+            <View style={{ backgroundColor:'white', borderRadius: 5 }}>
+              <Ionicons name="options" size={35} color={endDate || startDate || status ? '#FFC300' : 'black'} />
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -222,7 +224,8 @@ const styles = StyleSheet.create({
   input: {
     height: 50,
     backgroundColor: '#d0cece',
-    paddingLeft: 60, // Adjust as per the size of the icon + desired spacing
+    paddingLeft: 60,
+    borderRadius: 10,// Adjust as per the size of the icon + desired spacing
     width: 350,
     fontSize: 16,// Or any width you want
   },

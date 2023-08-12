@@ -2,7 +2,13 @@ import { createStore, applyMiddleware } from 'redux'
 import thunkMiddleWare from 'redux-thunk'
 
 const initialState = {
-  favoriteAnimal: 'wolf',
+  zach: 'ames',
+  ned: 'weingart',
+  deliveryReceipts: [],
+  deliveryPhotos: [],
+  deliveryNotes: '',
+  deliveryProject: '',
+  deliveryVendor: '',
 }
 
 const reducer = (state = initialState, action) => {

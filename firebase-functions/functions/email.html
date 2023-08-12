@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<h1>New Delivery from {{vendor}}</h1>
+<h3>Order Details</h3>
+<p>Project: {{project}}</p>
+<p>Date: {{date}}</p>
+<p>Vendor: {{vendor}}</p>
+<p>Notes: {{notes}}</p>
+
+<h3>Receipts</h3>
+{{#each receipts}}
+<img src="{{this}}" alt="receipt" style="width:1000px;height:600px;">
+{{/each}}
+
+<h3>Photos</h3>
+{{#each images}}
+<img src="{{this}}" alt="image" style="width:1000px;height:600px;">
+{{/each}}
+</body>
+</html>
+

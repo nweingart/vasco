@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 // ui imports
 import {
@@ -59,6 +59,15 @@ const NewDelivery = () => {
   const deliveryStatus = useSelector(state => state.deliveryStatus)
   const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
   const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
+  const mailingList = useSelector(state => state.mailingList)
+
+
+  useEffect(() => {
+    console.log(deliveryPhotoDownloadUrls)
+    console.log(deliveryReceiptDownloadUrls)
+    console.log(mailingList)
+  }, [deliveryReceiptDownloadUrls, deliveryPhotoDownloadUrls, mailingList])
+
 
 
   const addDelivery = async ({
@@ -165,16 +174,14 @@ const NewDelivery = () => {
               });
               const sendEmail = httpsCallable(functions, 'sendEmail');
               sendEmail({
+                receipts: deliveryReceiptDownloadUrls,
+                images: deliveryPhotoDownloadUrls,
+                date: deliveryDate,
+                project: deliveryProject,
+                vendor: deliveryVendor,
+                notes: deliveryNotes,
                 email: email,
-                deliveryReceipts: deliveryReceipts,
-                deliveryPhotos: deliveryPhotos,
-                deliveryDate: deliveryDate,
-                deliveryProject: deliveryProject,
-                deliveryVendor: deliveryVendor,
-                deliveryNotes: deliveryNotes,
-                deliveryStatus: deliveryStatus,
-                deliveryPhotoDownloadUrls: deliveryPhotoDownloadUrls,
-                deliveryReceiptDownloadUrls: deliveryReceiptDownloadUrls
+                status: deliveryStatus,
               }).then(result => {
                 console.log(result.data)
               })
@@ -256,6 +263,9 @@ const NewDelivery = () => {
       setShowInformation(true)
     }
   }
+
+  console.log(deliveryReceipts?.length)
+  console.log(deliveryPhotos?.length)
   const InformationItem = () => {
     return (
       <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 70, width: 300, padding: 5, marginTop: 5 }}>
@@ -275,8 +285,8 @@ const NewDelivery = () => {
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
               <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
             </View>
-            <RowItem invalid={deliveryReceipts.length <= 0} onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
-            <RowItem invalid={deliveryPhotos.length <= 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
+            <RowItem invalid={deliveryReceipts?.length === 0} onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
+            <RowItem invalid={deliveryPhotos?.length === 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
             <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
             <View style={styles.textBoxWrapper}>
               <Text style={styles.textBoxText}>Project</Text>
