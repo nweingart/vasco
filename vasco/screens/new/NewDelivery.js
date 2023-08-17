@@ -47,6 +47,7 @@ const NewDelivery = () => {
   const [vendor, setVendor] = useState('')
   const [status, setStatus] = useState('Not Approved')
   const [showInformation, setShowInformation] = useState(false)
+  const [disabled, setDisabled] = useState(true)
 
   const email = auth.currentUser.email
   const functions = getFunctions()
@@ -69,9 +70,8 @@ const NewDelivery = () => {
   }, [deliveryReceiptDownloadUrls, deliveryPhotoDownloadUrls, mailingList])
 
 
-
   const addDelivery = async ({
-    email,
+     email,
      deliveryReceipts,
      deliveryPhotos,
      deliveryDate,
@@ -139,6 +139,19 @@ const NewDelivery = () => {
           text: 'Yes',
           onPress: () => {
             clearImages()
+            dispatch(setDeliveryReceipts([]));
+            dispatch(setDeliveryPhotos([]));
+            dispatch(setDeliveryDate(null));
+            dispatch(setDeliveryProject(''));
+            dispatch(setDeliveryVendor(''));
+            dispatch(setDeliveryNotes(''));
+            dispatch(setDeliveryStatus('Not Approved'));
+            dispatch(setReceiptsDownloadUrls([]));
+            dispatch(setPhotoDownloadUrls([]));
+            setNotes('')
+            setProject('')
+            setVendor('')
+            setStatus('Not Approved')
             navigation.navigate('Home')
           }
         }
@@ -148,18 +161,24 @@ const NewDelivery = () => {
   }
 
   const handleSubmit = () => {
-    Alert.alert(
-      'Submit',
-      "Are you sure you want to submit this delivery",
-      [
-        {
-          text: 'No',
-          onPress: () => null,
-          style: 'cancel'
-        },
-        {
-          text: 'Yes',
-          onPress: () => {
+    if (disabled) {
+      Alert.alert(
+        'Cannot Submit',
+        'Please fill out all required fields',
+      )
+    } else {
+      Alert.alert(
+        'Submit',
+        "Are you sure you want to submit this delivery",
+        [
+          {
+            text: 'No',
+            onPress: () => null,
+            style: 'cancel'
+          },
+          {
+            text: 'Yes',
+            onPress: () => {
               addDelivery({
                 email,
                 deliveryReceipts,
@@ -182,38 +201,65 @@ const NewDelivery = () => {
                 notes: deliveryNotes,
                 email: email,
                 status: deliveryStatus,
-              }).then(result => {
-                console.log(result.data)
+              }).then(() => {
+                console.log('Email Sent')
+              }).catch((error) => {
+                console.log(error
+                )
               })
-            dispatch(setDeliveryReceipts([]));
-            dispatch(setDeliveryPhotos([]));
-            dispatch(setDeliveryDate(null));
-            dispatch(setDeliveryProject(''));
-            dispatch(setDeliveryVendor(''));
-            dispatch(setDeliveryNotes(''));
-            dispatch(setDeliveryStatus('Not Approved'));
-            dispatch(setReceiptsDownloadUrls([]));
-            dispatch(setPhotoDownloadUrls([]));
-            setNotes('')
-            setProject('')
-            setVendor('')
-            setStatus('Not Approved')
+              dispatch(setDeliveryReceipts([]));
+              dispatch(setDeliveryPhotos([]));
+              dispatch(setDeliveryDate(null));
+              dispatch(setDeliveryProject(''));
+              dispatch(setDeliveryVendor(''));
+              dispatch(setDeliveryNotes(''));
+              dispatch(setDeliveryStatus('Not Approved'));
+              dispatch(setReceiptsDownloadUrls([]));
+              dispatch(setPhotoDownloadUrls([]));
+              setNotes('')
+              setProject('')
+              setVendor('')
+              setStatus('Not Approved')
+              Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
+              navigation.navigate('Home');
 
-
-            Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
-            navigation.navigate('Home');
-
+            }
           }
-        }
-      ],
-      { cancelable: false }
-    );
+        ],
+        { cancelable: false }
+      );
+    }
   }
 
+  const disableFunc = () => {
+    if (!deliveryDate || !deliveryPhotos || !deliveryPhotos || !deliveryStatus) {
+      setDisabled(true)
+    } else if (!deliveryDate || !deliveryPhotos || !deliveryProject || deliveryStatus === 'Not Approved' && deliveryNotes === '') {
+      setDisabled(true)
+    } else {
+      setDisabled(false)
+    }
+  }
 
+  useEffect(() => {
+    disableFunc()
+  }, [deliveryDate, deliveryPhotos, deliveryProject, deliveryStatus, deliveryNotes])
 
   const handleBack = () => {
     navigation.navigate('Home')
+    dispatch(setDeliveryReceipts([]));
+    dispatch(setDeliveryPhotos([]));
+    dispatch(setDeliveryDate(null));
+    dispatch(setDeliveryProject(''));
+    dispatch(setDeliveryVendor(''));
+    dispatch(setDeliveryNotes(''));
+    dispatch(setDeliveryStatus('Not Approved'));
+    dispatch(setReceiptsDownloadUrls([]));
+    dispatch(setPhotoDownloadUrls([]));
+    setNotes('')
+    setProject('')
+    setVendor('')
+    setStatus('Not Approved')
   }
 
   const handleProjectChange = text => {
@@ -279,20 +325,22 @@ const NewDelivery = () => {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
         <ScrollView onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
           <View style={styles.backButtonWrapper}>
-            <TouchableOpacity style={{ zIndex: 5 }} onPress={handleBack}>
-              <Ionicons name='arrow-back-outline' size='25' color={'black'} />
+            <TouchableOpacity style={{ zIndex: 5, marginBottom: 10 }} onPress={handleBack}>
+              <Ionicons name='arrow-back-outline' size='35' color={'black'} />
             </TouchableOpacity>
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
               <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
             </View>
-            <RowItem invalid={deliveryReceipts?.length === 0} onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
-            <RowItem invalid={deliveryPhotos?.length === 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos'} valueCount={deliveryPhotos?.length} />
+            <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
+            <RowItem invalid={deliveryPhotos?.length === 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos of Material'} valueCount={deliveryPhotos?.length} />
             <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
             <View style={styles.textBoxWrapper}>
               <Text style={styles.textBoxText}>Project</Text>
+              <Ionicons name="medical" size={15} color={project === '' ? '#FF0A0A' : '#FFFFFF'} style={{ marginTop: -20, marginBottom: 10, marginLeft: -325 }} />
                 <TextInput
                   style={{ ...styles.textBox, height: 50 }}
                   value={project}
+                  placeholder={'Provide project name for materials'}
                   onChangeText={handleProjectChange}
                   autoCapitalize="sentences"
                 />
@@ -302,17 +350,8 @@ const NewDelivery = () => {
                 <TextInput
                   style={{ ...styles.textBox, height: 50 }}
                   value={vendor}
+                  placeholder={'Provide vendor name for materials'}
                   onChangeText={handleVendorChange}
-                  autoCapitalize="sentences"
-                />
-            </View>
-            <View style={styles.textBoxWrapper}>
-              {status === 'Not Approved' && notes === '' && <Ionicons name="medical" size={15} color="red" style={{ marginLeft: -325, marginBottom: -20, marginTop: 10 }} />}
-              <Text style={styles.textBoxText}>Notes</Text>
-                <TextInput
-                  style={ styles.textBox }
-                  value={notes}
-                  onChangeText={handleNotesChange}
                   autoCapitalize="sentences"
                 />
             </View>
@@ -329,7 +368,6 @@ const NewDelivery = () => {
                         <Ionicons name="medical" size={15} color="red"/>
                       </View>
                     </View>
-
                 }
               </View>
               <View style={styles.buttonsWrapper}>
@@ -340,6 +378,25 @@ const NewDelivery = () => {
                   <Text style={styles.buttonText}>Not Approved</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+            <View style={{...styles.textBoxWrapper, marginBottom: 10 }}>
+             <Ionicons name="medical" size={15} color={status === 'Not Approved' && notes === '' ? '#FF0A0A' : '#FFFFFF'} style={{ marginLeft: -325, marginBottom: -20, marginTop: 10 }} />
+              <Text style={styles.textBoxText}>Notes</Text>
+              {
+                status === 'Not Approved' ? <TextInput
+                  style={ styles.textBox }
+                  value={notes}
+                  placeholder={'If not approved, please provide reason why'}
+                  onChangeText={handleNotesChange}
+                  autoCapitalize="sentences"
+                /> : <TextInput
+                  style={ styles.textBox }
+                  value={notes}
+                  placeholder={'Give brief description of delivery items'}
+                  onChangeText={handleNotesChange}
+                  autoCapitalize="sentences"
+                />
+              }
             </View>
             <View style={styles.buttonsWrapper}>
               <TouchableOpacity style={{...styles.button, marginLeft: -15}} onPress={handleCancel}>

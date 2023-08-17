@@ -4,7 +4,7 @@ import React from "react";
 
 const RowItem = ({ iconName, text, onPress, valueCount, invalid }) => {
   return (
-    <ScrollView style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical: 15, marginRight: 25,  backgroundColor: '#FFC300' }}>
+    <ScrollView style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical: 10, marginRight: 25,  backgroundColor: '#FFC300' }}>
       <TouchableOpacity
         style={{
           display: 'flex',

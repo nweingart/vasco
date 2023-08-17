@@ -27,11 +27,13 @@ const MyDatePicker = ({ onConfirm, color, current }) => {
     setShow(true);
   };
 
+
   return (
-    <View style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical:15, marginRight: 25 }}>
+    <View style={{ borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical:10, marginRight: 25 }}>
       <TouchableOpacity onPress={showDatepicker}  style={{...styles.container, backgroundColor: color}}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{ marginLeft: 15 }}>
+          {!date && <Ionicons name="medical" size={15} color="red" style={{ marginLeft: 5, marginRight: 5 }} />}
+          <View style={{ marginLeft: !date ? 0 : 25}}>
             <Ionicons
               name="calendar-outline"
               size={25}

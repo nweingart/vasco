@@ -116,8 +116,6 @@ const Settings = () => {
       setShowInformation(true)
     }
   }
-
-
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
   const navigation = useNavigation()

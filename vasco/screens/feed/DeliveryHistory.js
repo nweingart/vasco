@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image } from 'react-native';
 import { db, auth } from "../../firebase/Firebase";
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where, startAfter } from "firebase/firestore";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation} from "@react-navigation/native";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
 import { setStatusFilter, setStartDateFilter, setEndDateFilter } from "../../redux/redux";
 
 const DeliveryHistory = () => {
   const [deliveries, setDeliveries] = useState([]);
-  const [filteredDeliveries, setFilteredDeliveries] = useState([]);
   const [search, setSearch] = useState('');
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastVisibleDoc, setLastVisibleDoc] = useState(null);
+  const [filteredDeliveries, setFilteredDeliveries] = useState([]);
+
+
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -20,55 +23,73 @@ const DeliveryHistory = () => {
   const endDate = useSelector(state => state.endDateFilter);
   const status = useSelector(state => state.statusFilter);
 
-  useEffect(() => {
-    const fetchDeliveries = async () => {
-      const deliveriesCollection = collection(db, 'deliveries');
-      const deliveryQuery = query(deliveriesCollection, where('email', '==', userEmail), orderBy('deliveryDate', 'desc'));
-      const deliveryDocs = await getDocs(deliveryQuery);
-      const deliveryData = deliveryDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setDeliveries(deliveryData);
-      setFilteredDeliveries(deliveryData);
-    };
-
-    fetchDeliveries();
-  }, []);
-
-  useEffect(() => {
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-    const deliveryStatus = status;
-
-    let filtered = deliveries;
-
-    if (start && end) {
-      filtered = deliveries.filter(item => {
-        const deliveryDate = new Date(item.deliveryDate?.seconds * 1000);
-        return deliveryDate >= start && deliveryDate <= end;
-      });
-    }
-
-    if (deliveryStatus) {
-      filtered = filtered.filter(item => item.deliveryStatus === deliveryStatus);
-    }
-
-    setFilteredDeliveries(filtered);
-  }, [startDate, endDate, status, deliveries]);
-
-  useEffect(() => {
-    const filtered = filteredDeliveries.filter(item =>
-      item.deliveryProject?.toLowerCase().includes(search.toLowerCase()) ||
-      item.deliveryVendor?.toLowerCase().includes(search.toLowerCase()) ||
-      item.deliveryNotes?.toLowerCase().includes(search.toLowerCase())
+  const fetchDeliveries = async (lastDoc = null) => {
+    let deliveryQuery = query(
+      collection(db, 'deliveries'),
+      where('email', '==', userEmail),
+      orderBy('deliveryDate', 'desc')
     );
 
-    setFilteredDeliveries(filtered);
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      deliveryQuery = query(
+        deliveryQuery,
+        where('deliveryDate', '>=', start),
+        where('deliveryDate', '<=', end)
+      );
+    }
+
+    if (status) {
+      deliveryQuery = query(deliveryQuery, where('deliveryStatus', '==', status));
+    }
+
+    if (lastDoc) {
+      deliveryQuery = query(deliveryQuery, startAfter(lastDoc));
+    }
+
+    const deliveryDocs = await getDocs(deliveryQuery);
+    const deliveryData = deliveryDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    setLastVisibleDoc(deliveryDocs.docs[deliveryDocs.docs.length - 1]);
+    if (lastDoc) {
+      setDeliveries(prev => [...prev, ...deliveryData]);
+    } else {
+      setDeliveries(deliveryData);  // reset the deliveries list if not paginating
+    }
+  };
+
+
+
+  useEffect(() => {
+    setDeliveries([]); // Clear the current deliveries
+    fetchDeliveries(); // Fetch deliveries with the new filters
+  }, [startDate, endDate, status]);
+
+  useEffect(() => {
+    if (search) {
+      const filtered = deliveries.filter(item =>
+        item.deliveryProject?.toLowerCase().includes(search.toLowerCase()) ||
+        item.deliveryVendor?.toLowerCase().includes(search.toLowerCase()) ||
+        item.deliveryNotes?.toLowerCase().includes(search.toLowerCase())
+      );
+
+      setDeliveries(filtered);
+    } else {
+    }
   }, [search]);
+
+  const handleLoadMore = async () => {
+    if (lastVisibleDoc) {
+      setLoadingMore(true);
+      await fetchDeliveries(lastVisibleDoc);
+    }
+  };
 
   const handleClearSearch = () => {
     setSearch('');
-    setFilteredDeliveries(deliveries);
+    fetchDeliveries()
   };
-
 
   const handleBack = () => {
     navigation.goBack()
@@ -78,58 +99,73 @@ const DeliveryHistory = () => {
     navigation.navigate('Filter')
   }
 
-  const handleClearStartDate = () => {
-    dispatch(setStartDateFilter(null));
+  const handleSearchChange = (text) => {
+    setSearch(text);
+
+    if (!text) {
+      setFilteredDeliveries(deliveries);
+      return;
+    }
+
+    const searchTerm = text.toLowerCase();
+    const filtered = deliveries.filter(delivery => {
+      return delivery.notes && delivery.notes.toLowerCase().includes(searchTerm);
+    });
+
+    setFilteredDeliveries(filtered);
   };
 
-  const handleClearEndDate = () => {
-    dispatch(setEndDateFilter(null));
-  };
-
-  const handleClearStatus = () => {
-    dispatch(setStatusFilter(''));
-  };
+  useEffect(() => {
+    setFilteredDeliveries(deliveries);
+  }, [deliveries]);
 
   const renderDelivery = ({ item }) => (
-    <View style={styles.deliveryItem}>
-      <View style={{ display: 'flex', flexDirection: 'row' }}>
-        <Text style={{...styles.itemText, fontWeight: '600', marginBottom: 15 }}>
-          {new Date(item?.deliveryDate?.seconds * 1000).toDateString()}
-        </Text>
-        <View style={{ marginLeft: 150 }}>
-          {item.deliveryStatus === 'Approved' ?
-            <Ionicons name="checkmark-circle-outline" size={35} color={'#40D35D'} />
-            : <Ionicons name="close-circle" size={35} color={'#FF0A0A'} />
-          }
+    <TouchableOpacity onPress={() => navigation.navigate('EditDetail', { delivery: item })}>
+      <View style={styles.deliveryCardContainer}>
+        <View style={styles.deliveryCard}>
+          <View style={{ display: 'flex', flexDirection: 'row' }}>
+            <Text style={{...styles.itemText, fontWeight: '600', marginBottom: 15 }}>
+              {new Date(item?.deliveryDate?.seconds * 1000).toDateString()}
+            </Text>
+            <View style={{ marginLeft: 150 }}>
+              {item.deliveryStatus === 'Approved' ?
+                <Ionicons name="checkmark-circle-outline" size={35} color={'#40D35D'} />
+                : <Ionicons name="close-circle" size={35} color={'#FF0A0A'} />
+              }
+            </View>
+          </View>
+          <Text style={styles.itemText}>{item.deliveryProject}</Text>
+          <Text style={styles.itemText}>{item.deliveryVendor}</Text>
+          <Text style={styles.itemText}>{item.deliveryNotes}</Text>
+          <ScrollView style={{ marginTop: 15}} horizontal={true} showsHorizontalScrollIndicator={false}>
+            {item?.deliveryPhotoDownloadUrls.concat(item?.deliveryReceiptDownloadUrls || []).map((url, index) => (
+              <Image
+                key={index}
+                style={{ width: 100, height: 100, marginHorizontal: 5, borderRadius: 5}}
+                source={{ uri: url }}
+              />
+            ))}
+          </ScrollView>
         </View>
       </View>
-      <Text style={styles.itemText}>{item.deliveryProject}</Text>
-      <Text style={styles.itemText}>{item.deliveryVendor}</Text>
-      <Text style={styles.itemText}>{item.deliveryNotes}</Text>
-      <ScrollView style={{ marginTop: 15}} horizontal={true} showsHorizontalScrollIndicator={false}>
-        {item?.deliveryPhotoDownloadUrls.concat(item?.deliveryReceiptDownloadUrls || []).map((url, index) => (
-          <Image
-            key={index}
-            style={{ width: 100, height: 100, marginHorizontal: 5, borderRadius: 5}}
-            source={{ uri: url }}
-          />
-        ))}
-      </ScrollView>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
       <View style={styles.backButtonContainer}>
-        <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back-outline" size={25} color={'black'} />
+        <TouchableOpacity onPress={handleBack} style={{ marginTop: 20}}>
+          <Ionicons name="arrow-back-outline" size={35} color={'black'} />
         </TouchableOpacity>
       </View>
       <Text style={styles.title}>Delivery History</Text>
       <View style={styles.searchContainer}>
+        <View style={styles.leftIconContainer}>
+          <Ionicons name="search" size={35} color={'black'} />
+        </View>
         <TextInput
           value={search}
-          onChangeText={text => setSearch(text)}
+          onChangeText={handleSearchChange}
           placeholder="Search"
           style={styles.input}
         />
@@ -137,9 +173,6 @@ const DeliveryHistory = () => {
           <TouchableOpacity onPress={handleClearSearch}>
             <Ionicons name="close-circle" size={20} color="black" />
           </TouchableOpacity>
-        </View>
-        <View style={styles.leftIconContainer}>
-          <Ionicons name="search" size={35} color={'black'} />
         </View>
         <View style={styles.rightIconContainer}>
           <TouchableOpacity onPress={handleFilter}>
@@ -174,106 +207,108 @@ const DeliveryHistory = () => {
         data={filteredDeliveries}
         renderItem={renderDelivery}
         keyExtractor={item => item.id}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() => {
+          return (loadingMore && lastVisibleDoc) ? <ActivityIndicator size="small" color="#0000ff" /> : null;
+        }}
       />
     </View>
   );
 };
 
+export default DeliveryHistory;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e8e7e7',
+    backgroundColor: '#F0F0F0', // Feed background color
+    padding: 15,
   },
   backButtonContainer: {
-    position: 'absolute',
-    left: 30,
-    top: 50,
+    marginTop: 20,  // Moving down the back button
+    marginBottom: 10
   },
   title: {
     fontSize: 24,
-    marginBottom: 5,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginBottom: 20  // Added margin bottom to give space under the title
   },
-  deliveryItem: {
-    backgroundColor: '#fff',
-    marginBottom: 10,
-    padding: 20,
-    width: 350,
-    borderRadius: 5,
+  deliveryCardContainer: {
+    marginBottom: 10  // This gives some space between the cards
   },
-  itemText: {
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Helvetica Neue',
-    marginVertical: 5,
-  },
-  dateText: {
-    fontWeight: '600',
-    marginVertical: 5,
+  deliveryCard: {  // This is the style for the white card
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5  // This will give shadow on Android
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'relative',
+    justifyContent: 'space-between',
     marginBottom: 15,
-    marginTop: 10,
+    padding: 5,
+    paddingLeft: 10, // Added this for left spacing
+    borderRadius: 5,
+    backgroundColor: '#E8E8E8',
   },
   input: {
-    height: 50,
-    backgroundColor: '#d0cece',
-    paddingLeft: 60,
-    borderRadius: 10,// Adjust as per the size of the icon + desired spacing
-    width: 350,
-    fontSize: 16,// Or any width you want
+    flex: 1,
+    backgroundColor: 'transparent',
+    padding: 10,
+    paddingLeft: 10, // Added this for spacing after the search icon
+    borderRadius: 5,
   },
   leftIconContainer: {
-    position: 'absolute',
-    left: 15, // Desired space from the left
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingRight: 5, // Added this for spacing after the search icon
+  },
+  clearSearchContainer: {
+    marginLeft: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rightIconContainer: {
-    position: 'absolute',
-    right: 15, // Desired space from the left
+    marginLeft: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   filterContainer: {
-    height: 90,// Sets the maximum height that the ScrollView can take
     flexDirection: 'row',
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: '#e8e7e7',
-  },
-  filterLabel: {
-    fontWeight: 'bold',
-    marginLeft: 25,
+    alignItems: 'center',
+    marginBottom: 15,
   },
   filterBadgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 50,
   },
   badge: {
-    marginVertical: 5,
-    height: 50,
-    padding: 10,
-    backgroundColor: '#FFC300',
+    backgroundColor: '#E8E8E8',
+    borderRadius: 15,
+    padding: 5,
+    marginRight: 5,
     flexDirection: 'row',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginLeft: 10,
+    alignItems: 'center',
   },
   badgeText: {
-    marginTop: 4,
-    fontSize: 14,
+    fontSize: 12,
   },
-  clearSearchContainer: {
-    position: 'absolute',
-    right: 60,
-    top: '50%',
-    transform: [{ translateY: -10 }]
-  }
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 5,
+  },
+  deliveryItem: {
+    marginBottom: 15,
+  },
+  itemText: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
 });
-
-export default DeliveryHistory;
-

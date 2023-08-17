@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { auth } from "./firebase/Firebase";
 import 'react-native-get-random-values';
-
-
 // screen imports
 import Register from './screens/auth/Register'
 import Login from './screens/auth/Login'
@@ -14,6 +12,7 @@ import UploadReceipts from './screens/UploadReceipts'
 import UploadPhotos from './screens/UploadPhotos'
 import Settings from './screens/Settings'
 import Filter from './screens/feed/Filter'
+import EditDetail from './screens/feed/EditDetail'
 
 // navigation imports
 import { NavigationContainer } from '@react-navigation/native'
@@ -50,11 +49,12 @@ const App = () => {
             <AuthStack.Screen options={{ headerShown: false}} name={'UploadReceipts'} component={UploadReceipts} />
             <AuthStack.Screen options={{ headerShown: false}} name={'UploadPhotos'} component={UploadPhotos} />
             <AuthStack.Screen options={{ headerShown: false}} name={'Settings'} component={Settings} />
+            <AuthStack.Screen options={{ headerShown: false}} name={'EditDetail'} component={EditDetail} />
           </AuthStack.Navigator>
         ) : (
           <NonAuthStack.Navigator>
             <NonAuthStack.Screen options={{ headerShown: false}} name={"Register"} component={Register} />
-            <NonAuthStack.Screen options={{ headerShown: false}} name={"Login"} component={Login} />
+            <NonAuthStack.Screen options={{ headerShown: false}} name={"EditDetail"} component={Login} />
           </NonAuthStack.Navigator>
         )}
       </NavigationContainer>

@@ -93,7 +93,7 @@ const Filter = () => {
             <Text style={{ ...styles.statusOption, color: 'white'}}>Not Approved</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={{ ...styles.button, marginTop: 20 }} onPress={handleClearFilters}>
+        <TouchableOpacity style={{ ...styles.button, display: 'flex', justifyContent: 'center', alignItems: 'center' ,marginTop: 20 }} onPress={handleClearFilters}>
           <Text style={styles.buttonText}>Clear Filters</Text>
         </TouchableOpacity>
       </View>
