@@ -22,10 +22,10 @@ import { createNativeStackNavigator} from 'react-native-screens/native-stack'
 import { Provider } from 'react-redux'
 import { store } from './redux/redux'
 
-const AuthStack = createNativeStackNavigator();
-const NonAuthStack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const App = () => {
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -39,24 +39,19 @@ const App = () => {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        {isAuthenticated ? (
-          <AuthStack.Navigator>
-            <AuthStack.Screen options={{ headerShown: false}} name={"Home"} component={Home} />
-            <AuthStack.Screen options={{ headerShown: false}} name={"NewDelivery"} component={NewDelivery}  />
-            <AuthStack.Screen options={{ headerShown: false}} name={"DeliveryHistory"} component={DeliveryHistory} />
-            <AuthStack.Screen options={{ headerShown: false}} name={"Filter"} component={Filter} />
-            <AuthStack.Screen options={{ headerShown: false}} name={"SingleReceipt"} component={SingleReceipt} />
-            <AuthStack.Screen options={{ headerShown: false}} name={'UploadReceipts'} component={UploadReceipts} />
-            <AuthStack.Screen options={{ headerShown: false}} name={'UploadPhotos'} component={UploadPhotos} />
-            <AuthStack.Screen options={{ headerShown: false}} name={'Settings'} component={Settings} />
-            <AuthStack.Screen options={{ headerShown: false}} name={'EditDetail'} component={EditDetail} />
-          </AuthStack.Navigator>
-        ) : (
-          <NonAuthStack.Navigator>
-            <NonAuthStack.Screen options={{ headerShown: false}} name={"Register"} component={Register} />
-            <NonAuthStack.Screen options={{ headerShown: false}} name={"EditDetail"} component={Login} />
-          </NonAuthStack.Navigator>
-        )}
+        <Stack.Navigator initialRouteName={isAuthenticated ? 'NewDelivery' : 'Login'}>
+          <Stack.Screen options={{ headerShown: false}} name={"Home"} component={Home} />
+          <Stack.Screen options={{ headerShown: false}} name={"NewDelivery"} component={NewDelivery}  />
+          <Stack.Screen options={{ headerShown: false}} name={"DeliveryHistory"} component={DeliveryHistory} />
+          <Stack.Screen options={{ headerShown: false}} name={"Filter"} component={Filter} />
+          <Stack.Screen options={{ headerShown: false}} name={"SingleReceipt"} component={SingleReceipt} />
+          <Stack.Screen options={{ headerShown: false}} name={'UploadReceipts'} component={UploadReceipts} />
+          <Stack.Screen options={{ headerShown: false}} name={'UploadPhotos'} component={UploadPhotos} />
+          <Stack.Screen options={{ headerShown: false}} name={'Settings'} component={Settings} />
+          <Stack.Screen options={{ headerShown: false}} name={'EditDetail'} component={EditDetail} />
+          <Stack.Screen options={{ headerShown: false}} name={"Register"} component={Register} />
+          <Stack.Screen options={{ headerShown: false}} name={"Login"} component={Login} />
+        </Stack.Navigator>
       </NavigationContainer>
     </Provider>
   )

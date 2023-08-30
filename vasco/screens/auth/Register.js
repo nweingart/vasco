@@ -1,22 +1,15 @@
-// ui imports
-import React, { useState, useEffect } from 'react'
-import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image,  } from 'react-native'
-import { CheckBox } from 'react-native-elements'
-
-// firebase imports
-import { auth, db } from '../../firebase/Firebase'
-import { createUserWithEmailAndPassword, signOut } from 'firebase/auth'
-import { setDoc, doc } from 'firebase/firestore'
-
-// navigation imports
-import { useNavigation } from '@react-navigation/native'
+import React, { useState, useEffect } from 'react';
+import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image} from 'react-native';
+import { auth, db } from '../../firebase/Firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 import AppIcon from "../../assets/appicon.png";
 
 const Register = () => {
-  const navigation = useNavigation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [staySignedIn, setStaySignedIn] = useState(false)
+  const navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleRegister = () => {
     createUserWithEmailAndPassword(auth, email, password)
@@ -32,53 +25,37 @@ const Register = () => {
       .catch(error => alert(error.message));
   };
 
-
-
   const handleLogin = () => {
-    navigation.navigate("Login")
+    navigation.navigate("Login");
   }
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
-        navigation.replace("Home")
+        navigation.navigate("Home");
       }
     });
-    if (!staySignedIn) {
-      const signOutListener = auth.onAuthStateChanged(user => {
-        if (!user) {
-          signOut(auth);
-        }
-      });
-      return () => {
-        unsubscribe();
-        signOutListener();
-      };
-    }
     return unsubscribe;
-  }, [staySignedIn]);
+  }, []);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior="padding"
-    >
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View>
         <Image style={{ height: 100, width: 100, marginBottom: 100, marginTop: -75 }} source={AppIcon} />
       </View>
-      <View style={{ zIndex: 5, marginBottom: 25, marginTop: -75  }}>
+      <View style={{ zIndex: 5, marginBottom: 25, marginTop: -75 }}>
         <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 24 }}>VASCO</Text>
       </View>
       <View style={styles.inputContainer}>
         <TextInput
-          placeholder="email"
+          placeholder="Company email"
           value={email}
           onChangeText={text => setEmail(text)}
           style={styles.input}
           autoCapitalize="none"
         />
         <TextInput
-          placeholder="password"
+          placeholder="Password"
           value={password}
           onChangeText={text => setPassword(text)}
           style={styles.input}
@@ -86,28 +63,21 @@ const Register = () => {
         />
       </View>
       <View>
-        <TouchableOpacity
-          onPress={handleRegister}
-          style={styles.button}
-        >
+        <TouchableOpacity onPress={handleRegister} style={styles.button}>
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
-      <View style={{ marginTop: 15 }}>
-        <CheckBox
-          title='Stay signed in'
-          checked={staySignedIn}
-          onPress={() => setStaySignedIn(!staySignedIn)}
-        />
-      </View>
       <View style={styles.register}>
-        <Text style={styles.bottomText} onPress={handleLogin}>
-          Already have an account? Login here
-        </Text>
+        <TouchableOpacity onPress={handleLogin}>
+          <Text style={styles.bottomText}>
+            Already have an account? Login here
+          </Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
-  )
+  );
 }
+
 
 const styles = StyleSheet.create({
   container: {

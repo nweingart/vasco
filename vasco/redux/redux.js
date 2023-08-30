@@ -9,10 +9,13 @@ const initialState = {
   deliveryNotes: '',
   deliveryProject: '',
   deliveryVendor: '',
+  platform: '',
 }
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
+    case 'PLATFORM':
+      return { ...state, platform: action.payload }
     case 'SET_DELIVERY_RECEIPTS':
       return { ...state, deliveryReceipts: action.payload }
     case 'SET_DELIVERY_PHOTOS':
@@ -48,6 +51,12 @@ const reducer = (state = initialState, action) => {
 
 const store = createStore(reducer, applyMiddleware(thunkMiddleWare))
 
+const setPlatform = (platform) => {
+  return {
+    type: 'PLATFORM',
+    payload: platform,
+  }
+}
 
 const setDeliveryReceipts = (receipts) => {
   return {

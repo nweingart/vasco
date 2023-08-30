@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image } from 'react-native';
 import { db, auth } from "../../firebase/Firebase";
 import { collection, getDocs, query, orderBy, where, startAfter } from "firebase/firestore";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { setStatusFilter, setStartDateFilter, setEndDateFilter } from "../../redux/redux";
 
@@ -59,6 +59,12 @@ const DeliveryHistory = () => {
     }
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchDeliveries();
+      return () => {};
+    }, [])
+  );
 
 
   useEffect(() => {
@@ -92,7 +98,7 @@ const DeliveryHistory = () => {
   };
 
   const handleBack = () => {
-    navigation.goBack()
+    navigation.navigate('Home')
   }
 
   const handleFilter = () => {
@@ -119,46 +125,59 @@ const DeliveryHistory = () => {
     setFilteredDeliveries(deliveries);
   }, [deliveries]);
 
-  const renderDelivery = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('EditDetail', { delivery: item })}>
-      <View style={styles.deliveryCardContainer}>
-        <View style={styles.deliveryCard}>
-          <View style={{ display: 'flex', flexDirection: 'row' }}>
-            <Text style={{...styles.itemText, fontWeight: '600', marginBottom: 15 }}>
-              {new Date(item?.deliveryDate?.seconds * 1000).toDateString()}
-            </Text>
-            <View style={{ marginLeft: 150 }}>
-              {item.deliveryStatus === 'Approved' ?
-                <Ionicons name="checkmark-circle-outline" size={35} color={'#40D35D'} />
-                : <Ionicons name="close-circle" size={35} color={'#FF0A0A'} />
-              }
+  const renderDelivery = ({ item }) => {
+    // Extract the date from the Firestore timestamp
+    const dateObject = new Date(item?.deliveryDate?.seconds * 1000);
+    const formattedDate = dateObject.toDateString();
+
+    // This will give a time like '10:35 AM'
+    const formattedTime = dateObject.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+    return (
+      <TouchableOpacity onPress={() => navigation.navigate('EditDetail', { delivery: item })}>
+        <View style={styles.deliveryCardContainer}>
+          <View style={styles.deliveryCard}>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{...styles.itemText, fontWeight: '600' }}>
+                {formattedDate}
+              </Text>
+              <Text style={styles.itemText}> {formattedTime}</Text>
+              <View style={{ marginLeft: 'auto' }}>
+                {item.deliveryStatus === 'Approved' ?
+                  <Ionicons name="checkmark-circle-outline" size={35} color={'#40D35D'} />
+                  : <Ionicons name="close-circle" size={35} color={'#FF0A0A'} />
+                }
+              </View>
             </View>
+            <Text style={styles.itemText}>{item.deliveryProject}</Text>
+            <Text style={styles.itemText}>{item.deliveryVendor}</Text>
+            <Text style={styles.itemText}>{item.deliveryNotes}</Text>
+            <ScrollView style={{ marginTop: 15}} horizontal={true} showsHorizontalScrollIndicator={false}>
+              {item?.deliveryPhotoDownloadUrls.concat(item?.deliveryReceiptDownloadUrls || []).map((url, index) => (
+                <Image
+                  key={index}
+                  style={{ width: 100, height: 100, marginHorizontal: 5, borderRadius: 5}}
+                  source={{ uri: url }}
+                />
+              ))}
+            </ScrollView>
           </View>
-          <Text style={styles.itemText}>{item.deliveryProject}</Text>
-          <Text style={styles.itemText}>{item.deliveryVendor}</Text>
-          <Text style={styles.itemText}>{item.deliveryNotes}</Text>
-          <ScrollView style={{ marginTop: 15}} horizontal={true} showsHorizontalScrollIndicator={false}>
-            {item?.deliveryPhotoDownloadUrls.concat(item?.deliveryReceiptDownloadUrls || []).map((url, index) => (
-              <Image
-                key={index}
-                style={{ width: 100, height: 100, marginHorizontal: 5, borderRadius: 5}}
-                source={{ uri: url }}
-              />
-            ))}
-          </ScrollView>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
+
 
   return (
     <View style={styles.container}>
       <View style={styles.backButtonContainer}>
-        <TouchableOpacity onPress={handleBack} style={{ marginTop: 20}}>
-          <Ionicons name="arrow-back-outline" size={35} color={'black'} />
+        <TouchableOpacity onPress={handleBack}>
+          <Ionicons name="arrow-back-outline" size={35} color={'black'} style={{ marginBottom: -25, marginTop: 25, marginLeft: 5}} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.title}>Delivery History</Text>
+      <View style={{ justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={styles.title}>Delivery History</Text>
+      </View>
       <View style={styles.searchContainer}>
         <View style={styles.leftIconContainer}>
           <Ionicons name="search" size={35} color={'black'} />

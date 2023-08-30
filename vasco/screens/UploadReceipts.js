@@ -90,7 +90,7 @@ const UploadReceipts = () => {
     <View style={styles.container}>
       <View style={styles.backButtonContainer}>
         <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back-outline" size={25} color={'black'} />
+          <Ionicons name="arrow-back-outline" size={35} color={'black'} />
         </TouchableOpacity>
       </View>
       <Text style={styles.imagesHeading}>Delivery Receipts</Text>
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   backButtonContainer: {
     position: 'absolute',
     left: 30,
-    top: 50,
+    top: 70,
   },
   buttonsContainer: {
     flexDirection: 'row',
@@ -157,8 +157,9 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   image: {
-    width: 60,
-    height: 60,
+    width: 100,
+    height: 100,
+    borderRadius: 5,
   },
   imagesHeading: {
     fontSize: 24,

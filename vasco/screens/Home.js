@@ -7,13 +7,12 @@ import AppIcon from '../assets/appicon.png'
 
 const Home = () => {
   const navigation = useNavigation()
-  const submitted = false
   const user = auth.currentUser
 
   const handleSignOut = () => {
     auth.signOut()
       .then(() => {
-        navigation.replace("Login")
+        navigation.navigate("Login")
       })
       .catch(error => alert(error.message))
   }
@@ -28,10 +27,6 @@ const Home = () => {
 
   const handleReceiptHistory = () => {
     navigation.navigate("DeliveryHistory")
-  }
-
-  const handleSettings = () => {
-    navigation.navigate("Settings")
   }
 
 
@@ -57,11 +52,6 @@ const Home = () => {
         <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleReceiptHistory}>
           <Text style={styles.linkButtonText}>
             Delivery History
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleSettings}>
-          <Text style={styles.linkButtonText}>
-            Settings
           </Text>
         </TouchableOpacity>
       </View>

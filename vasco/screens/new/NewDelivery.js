@@ -39,7 +39,6 @@ import { useDispatch } from 'react-redux'
 // firebase imports
 import { db, auth } from '../../firebase/Firebase'
 import { collection, addDoc } from 'firebase/firestore'
-import { getFunctions, httpsCallable } from 'firebase/functions'
 
 const NewDelivery = () => {
   const [notes, setNotes] = useState('')
@@ -50,7 +49,6 @@ const NewDelivery = () => {
   const [disabled, setDisabled] = useState(true)
 
   const email = auth.currentUser.email
-  const functions = getFunctions()
   const deliveryReceipts = useSelector(state => state.deliveryReceipts)
   const deliveryPhotos = useSelector(state => state.deliveryPhotos)
   const deliveryDate = useSelector(state => state.deliveryDate)
@@ -60,20 +58,9 @@ const NewDelivery = () => {
   const deliveryStatus = useSelector(state => state.deliveryStatus)
   const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
   const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
-  const mailingList = useSelector(state => state.mailingList)
-
-
-  useEffect(() => {
-    console.log(deliveryPhotoDownloadUrls)
-    console.log(deliveryReceiptDownloadUrls)
-    console.log(mailingList)
-  }, [deliveryReceiptDownloadUrls, deliveryPhotoDownloadUrls, mailingList])
-
 
   const addDelivery = async ({
      email,
-     deliveryReceipts,
-     deliveryPhotos,
      deliveryDate,
      deliveryProject,
      deliveryVendor,
@@ -83,18 +70,16 @@ const NewDelivery = () => {
      deliveryReceiptDownloadUrls
   }) => {
     try {
-      const docRef = await addDoc(collection(db, 'deliveries'), {
-        email,
-        deliveryReceipts,
-        deliveryPhotos,
-        deliveryDate,
-        deliveryProject,
-        deliveryVendor,
-        deliveryNotes,
-        deliveryStatus,
-        deliveryPhotoDownloadUrls,
-        deliveryReceiptDownloadUrls
-      });
+        const docRef = await addDoc(collection(db, 'deliveries'), {
+          email,
+          deliveryDate,
+          deliveryProject,
+          deliveryVendor,
+          deliveryNotes,
+          deliveryStatus,
+          deliveryPhotoDownloadUrls,
+          deliveryReceiptDownloadUrls
+        });
       console.log('Document written with ID: ', docRef.id);
     } catch (e) {
       console.error('Error adding document: ', e);
@@ -103,8 +88,6 @@ const NewDelivery = () => {
 
   const navigation = useNavigation()
   const dispatch = useDispatch()
-
-  console.log(status)
 
   const handleStatus = () => {
     if (status === 'Not Approved') {
@@ -117,6 +100,7 @@ const NewDelivery = () => {
     }
 
   const handleDateConfirm = date => {
+    console.log(date)
     dispatch(setDeliveryDate(date))
   };
 
@@ -181,8 +165,6 @@ const NewDelivery = () => {
             onPress: () => {
               addDelivery({
                 email,
-                deliveryReceipts,
-                deliveryPhotos,
                 deliveryDate,
                 deliveryProject,
                 deliveryVendor,
@@ -190,39 +172,26 @@ const NewDelivery = () => {
                 deliveryStatus,
                 deliveryPhotoDownloadUrls,
                 deliveryReceiptDownloadUrls
-              });
-              const sendEmail = httpsCallable(functions, 'sendEmail');
-              sendEmail({
-                receipts: deliveryReceiptDownloadUrls,
-                images: deliveryPhotoDownloadUrls,
-                date: deliveryDate,
-                project: deliveryProject,
-                vendor: deliveryVendor,
-                notes: deliveryNotes,
-                email: email,
-                status: deliveryStatus,
               }).then(() => {
-                console.log('Email Sent')
+                console.log('Delivery Submitted')
+                dispatch(setDeliveryReceipts([]));
+                dispatch(setDeliveryPhotos([]));
+                dispatch(setDeliveryDate(null));
+                dispatch(setDeliveryProject(''));
+                dispatch(setDeliveryVendor(''));
+                dispatch(setDeliveryNotes(''));
+                dispatch(setDeliveryStatus('Not Approved'));
+                dispatch(setReceiptsDownloadUrls([]));
+                dispatch(setPhotoDownloadUrls([]));
+                setNotes('')
+                setProject('')
+                setVendor('')
+                setStatus('Not Approved')
+                Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
+                navigation.navigate("DeliveryHistory");
               }).catch((error) => {
-                console.log(error
-                )
+                Alert.alert('Error', error.message);
               })
-              dispatch(setDeliveryReceipts([]));
-              dispatch(setDeliveryPhotos([]));
-              dispatch(setDeliveryDate(null));
-              dispatch(setDeliveryProject(''));
-              dispatch(setDeliveryVendor(''));
-              dispatch(setDeliveryNotes(''));
-              dispatch(setDeliveryStatus('Not Approved'));
-              dispatch(setReceiptsDownloadUrls([]));
-              dispatch(setPhotoDownloadUrls([]));
-              setNotes('')
-              setProject('')
-              setVendor('')
-              setStatus('Not Approved')
-              Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
-              navigation.navigate('Home');
-
             }
           }
         ],
@@ -232,9 +201,15 @@ const NewDelivery = () => {
   }
 
   const disableFunc = () => {
-    if (!deliveryDate || !deliveryPhotos || !deliveryPhotos || !deliveryStatus) {
-      setDisabled(true)
-    } else if (!deliveryDate || !deliveryPhotos || !deliveryProject || deliveryStatus === 'Not Approved' && deliveryNotes === '') {
+    if (
+      !deliveryReceipts ||
+      !deliveryPhotos ||
+      !deliveryDate ||
+      !deliveryProject ||
+      !deliveryVendor ||
+      !deliveryNotes ||
+      !deliveryStatus
+    ) {
       setDisabled(true)
     } else {
       setDisabled(false)
@@ -245,22 +220,6 @@ const NewDelivery = () => {
     disableFunc()
   }, [deliveryDate, deliveryPhotos, deliveryProject, deliveryStatus, deliveryNotes])
 
-  const handleBack = () => {
-    navigation.navigate('Home')
-    dispatch(setDeliveryReceipts([]));
-    dispatch(setDeliveryPhotos([]));
-    dispatch(setDeliveryDate(null));
-    dispatch(setDeliveryProject(''));
-    dispatch(setDeliveryVendor(''));
-    dispatch(setDeliveryNotes(''));
-    dispatch(setDeliveryStatus('Not Approved'));
-    dispatch(setReceiptsDownloadUrls([]));
-    dispatch(setPhotoDownloadUrls([]));
-    setNotes('')
-    setProject('')
-    setVendor('')
-    setStatus('Not Approved')
-  }
 
   const handleProjectChange = text => {
     setProject(text);
@@ -276,7 +235,6 @@ const NewDelivery = () => {
     setNotes(text);
     dispatch(setDeliveryNotes(text));
   };
-
 
   const navigateToReceipts = () => {
     navigation.navigate('UploadReceipts')
@@ -301,7 +259,6 @@ const NewDelivery = () => {
       return 0.5
     }
   }
-
   const handleInformation = () => {
     if (showInformation) {
       setShowInformation(false)
@@ -324,88 +281,113 @@ const NewDelivery = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
         <ScrollView onAccessibilityEscape={Keyboard.dismiss} style={styles.container}>
-          <View style={styles.backButtonWrapper}>
-            <TouchableOpacity style={{ zIndex: 5, marginBottom: 10 }} onPress={handleBack}>
-              <Ionicons name='arrow-back-outline' size='35' color={'black'} />
+          <View style={{ ...styles.backButtonWrapper, marginTop: Platform.OS === 'android' ? 50 : 75 }}>
+            <TouchableOpacity style={{ zIndex: 5, marginBottom: 10 }} onPress={handleCancel}>
+              <Ionicons name='arrow-back-outline' size={35} color={'black'} />
             </TouchableOpacity>
+          </View>
+          <View>
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
               <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
             </View>
-            <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
-            <RowItem invalid={deliveryPhotos?.length === 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos of Material'} valueCount={deliveryPhotos?.length} />
-            <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
-            <View style={styles.textBoxWrapper}>
-              <Text style={styles.textBoxText}>Project</Text>
-              <Ionicons name="medical" size={15} color={project === '' ? '#FF0A0A' : '#FFFFFF'} style={{ marginTop: -20, marginBottom: 10, marginLeft: -325 }} />
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+              <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
+            </View>
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <RowItem invalid={deliveryPhotos?.length === 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos of Material'} valueCount={deliveryPhotos?.length} />
+            </View>
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
+            </View>
+            <View>
+              <View style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '-5%', marginTop: '5%' }}>
+                <Text style={{ ...styles.textBoxText,  marginLeft: '12.5%' }}>Project</Text>
+                <Ionicons name="medical" size={15} color={project === '' ? '#FF0A0A' : '#FFFFFF'} style={{ marginTop: -20, marginBottom: 10, marginLeft: '7%' }} />
+              </View>
+              <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 20 }}>
                 <TextInput
-                  style={{ ...styles.textBox, height: 50 }}
+                  style={{ ...styles.textBox, height: 50, width: '90%' }}
                   value={project}
                   placeholder={'Provide project name for materials'}
                   onChangeText={handleProjectChange}
                   autoCapitalize="sentences"
                 />
+              </View>
             </View>
-            <View style={styles.textBoxWrapper}>
-              <Text style={styles.textBoxText}>Vendor</Text>
-                <TextInput
-                  style={{ ...styles.textBox, height: 50 }}
-                  value={vendor}
-                  placeholder={'Provide vendor name for materials'}
-                  onChangeText={handleVendorChange}
-                  autoCapitalize="sentences"
-                />
+            <View style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '-5%', marginTop: '5%' }}>
+              <Text style={{ ...styles.textBoxText,  marginLeft: '12.5%' }}>Vendor</Text>
             </View>
-            <View style={{ borderWidth: 2, borderColor: 'gray', height: 160, marginTop: 20, width: 350, marginLeft: -10, borderRadius: 10 }}>
-              <View style={{ display: 'flex', flexDirection: 'row'}}>
-                <Ionicons onPress={handleInformation} name="information-circle-outline" size='25' color={'black'} />
-                {
-                  showInformation ?
-                    <InformationItem />
-                    :
-                    <View style={{ display: 'flex', flexDirection: 'row', marginTop: 5, marginLeft: 5}}>
-                      <Text>Approval Status</Text>
-                      <View style={{ marginLeft: 5 }}>
-                        <Ionicons name="medical" size={15} color="red"/>
+            <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 20 }}>
+              <TextInput
+                style={{ ...styles.textBox, height: 50, width: '90%' }}
+                value={vendor}
+                placeholder={'Provide vendor name for materials'}
+                onChangeText={handleVendorChange}
+                autoCapitalize="sentences"
+              />
+            </View>
+            <View style={{ justifyContent: 'center', alignItems: 'center'}}>
+              <View style={{ borderWidth: 2, borderColor: 'gray', height: 160, marginTop: 20, width: '90%', borderRadius: 10, padding: 2.5 }}>
+                <View style={{ display: 'flex', flexDirection: 'row'}}>
+                  <Ionicons onPress={handleInformation} name="information-circle-outline" size={25} color={'black'} />
+                  {
+                    showInformation ?
+                      <InformationItem />
+                      :
+                      <View style={{ display: 'flex', flexDirection: 'row', marginTop: 5, marginLeft: 5}}>
+                        <Text>Approval Status</Text>
+                        <View style={{ marginLeft: 5 }}>
+                          <Ionicons name="medical" size={15} color="red"/>
+                        </View>
                       </View>
-                    </View>
-                }
-              </View>
-              <View style={styles.buttonsWrapper}>
-                <TouchableOpacity style={{...styles.button, marginLeft: -15, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
-                  <Text style={styles.buttonText}>Approved</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{...styles.button, marginLeft: 30, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={handleStatus}>
-                  <Text style={styles.buttonText}>Not Approved</Text>
-                </TouchableOpacity>
+                  }
+                </View>
+                <View style={styles.buttonsWrapper}>
+                  <TouchableOpacity style={{...styles.button, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
+                    <Text style={styles.buttonText}>Approved</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{...styles.button, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={handleStatus}>
+                    <Text style={styles.buttonText}>Not Approved</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-            <View style={{...styles.textBoxWrapper, marginBottom: 10 }}>
-             <Ionicons name="medical" size={15} color={status === 'Not Approved' && notes === '' ? '#FF0A0A' : '#FFFFFF'} style={{ marginLeft: -325, marginBottom: -20, marginTop: 10 }} />
-              <Text style={styles.textBoxText}>Notes</Text>
+            <View style={{ marginBottom: '-5%', marginTop: '5%' }}>
+              <Ionicons name="medical" size={15} color={status === 'Not Approved' && notes === '' ? '#FF0A0A' : '#FFFFFF'} style={{  marginLeft: '7%' }} />
+              <Text style={{ ...styles.textBoxText, marginBottom: '5%', marginLeft: '12.5%', marginTop: '-5%' }}>Notes</Text>
+            </View>
               {
-                status === 'Not Approved' ? <TextInput
-                  style={ styles.textBox }
-                  value={notes}
-                  placeholder={'If not approved, please provide reason why'}
-                  onChangeText={handleNotesChange}
-                  autoCapitalize="sentences"
-                /> : <TextInput
-                  style={ styles.textBox }
-                  value={notes}
-                  placeholder={'Give brief description of delivery items'}
-                  onChangeText={handleNotesChange}
-                  autoCapitalize="sentences"
-                />
+                status === 'Not Approved' ?
+                  <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: '5%' }}>
+                    <TextInput
+                    style={{...styles.textBox, width: '90%' }}
+                    value={notes}
+                    placeholder={'If not approved, please provide reason why'}
+                    onChangeText={handleNotesChange}
+                    autoCapitalize="sentences"
+                  />
+                  </View>
+                  :
+                  <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: '5%' }}>
+                    <TextInput
+                    style={{...styles.textBox, width: '90%' }}
+                    value={notes}
+                    placeholder={'Give brief description of delivery items'}
+                    onChangeText={handleNotesChange}
+                    autoCapitalize="sentences"
+                  />
+                </View>
               }
-            </View>
-            <View style={styles.buttonsWrapper}>
-              <TouchableOpacity style={{...styles.button, marginLeft: -15}} onPress={handleCancel}>
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{...styles.button, marginLeft: 30}} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Submit</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10%'}}>
+                <View style={{ display: 'flex', flexDirection: 'row'}}>
+                  <TouchableOpacity style={{...styles.button, marginRight: '2%' }} onPress={handleCancel}>
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{...styles.button, marginLeft: '2%', }} onPress={handleSubmit}>
+                    <Text style={styles.buttonText}>Submit</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -420,7 +402,6 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   backButtonWrapper: {
-    marginTop: 75,
     marginBottom: 25,
     marginLeft: 25,
   },
@@ -432,7 +413,7 @@ const styles = StyleSheet.create({
   },
   textBoxWrapper: {
     marginTop: 15,
-    marginRight: 25,
+    width: '90%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -456,8 +437,9 @@ const styles = StyleSheet.create({
   },
   buttonsWrapper: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 10,
-    marginHorizontal: 20,
   },
   button: {
     justifyContent: 'center',
@@ -476,7 +458,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Avenir',
-    marginRight: 250,
   }
 })
 

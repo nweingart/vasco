@@ -3,7 +3,6 @@ import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInpu
 // firebase imports
 import { auth } from '../../firebase/Firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { setDoc, doc } from 'firebase/firestore'
 
 // navigation imports
 import { useNavigation } from '@react-navigation/native'
@@ -14,12 +13,21 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (user) {
+        navigation.navigate("Home")
+      }
+    })
+    return unsubscribe
+  }, [])
+
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then(userCredentials => {
         const user = userCredentials.user
         console.log(`logged in with email ${user.email}`)
-        navigation.replace("NewDelivery")
+        navigation.navigate("NewDelivery")
       })
       .catch(error => alert(error.message))
   }
@@ -41,14 +49,14 @@ const Login = () => {
       </View>
       <View style={styles.inputContainer}>
         <TextInput
-          placeholder="email"
+          placeholder="Company email"
           value={email}
           onChangeText={text => setEmail(text)}
           style={styles.input}
           autoCapitalize="none"
         />
         <TextInput
-          placeholder="password"
+          placeholder="Password"
           value={password}
           onChangeText={text => setPassword(text)}
           style={styles.input}
@@ -64,9 +72,11 @@ const Login = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.register}>
-        <Text style={styles.bottomText} onPress={handleRegister}>
-          New to Vasco? Create an account here
-        </Text>
+        <TouchableOpacity onPress={handleRegister}>
+          <Text style={styles.bottomText}>
+            New to Vasco? Create an account here
+          </Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   )
