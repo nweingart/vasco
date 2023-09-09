@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Platform, View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from "@expo/vector-icons/Ionicons";
+
+const screenWidth = Dimensions.get('window').width;
+const isTablet = screenWidth >= 768;
 
 const DatePicker = ({ onConfirm, color, current }) => {
   const [date, setDate] = useState(null);
@@ -38,7 +41,7 @@ const DatePicker = ({ onConfirm, color, current }) => {
   };
 
   return (
-    <View style={{ width: '90%', borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical:10 }}>
+    <View style={{ height: isTablet ? 45 : 25, width: isTablet ? '60%' : '90%', borderRadius: 10, borderWidth: 2, borderColor: 'black', marginVertical:10 }}>
       <TouchableOpacity onPress={showDatepicker}  style={{...styles.container, backgroundColor: color}}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {!date && <Ionicons name="medical" size={15} color="red" style={{ marginLeft: 5, marginRight: 5 }} />}
@@ -51,7 +54,7 @@ const DatePicker = ({ onConfirm, color, current }) => {
           </View>
         </View>
         {show ? (
-          <View style={{ marginLeft: -47.5}}>
+          <View style={{ zIndex: 10, marginLeft: isTablet ? '15%' : -47.5, marginTop: isTablet ? '10%' : 0}}>
             <DateTimePicker
               testID="dateTimePicker"
               value={tempDate}
@@ -59,6 +62,7 @@ const DatePicker = ({ onConfirm, color, current }) => {
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={onChange}
               style={{backgroundColor: 'white'}}
+              transform={ isTablet ? [{ scale: 1.25 }] : undefined}
             />
             {
               Platform.OS === 'ios' ?
@@ -81,16 +85,18 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'row',
-    borderRadius: 7.5,
+    borderRadius: isTablet ? 10 : 7.5,
+    height: isTablet ? 41 : 25,
+    zIndex: 10,
   },
   calendarIcon: {
-    marginLeft: 25,
+    marginLeft: isTablet ? 35 : 25,
   },
   calendarText: {
-    fontSize: 14,
-    marginLeft: 75,
+    fontSize: isTablet ? 18 : 14,
+    marginLeft: isTablet ? 200 : 75,
     fontWeight: '500',
-    marginTop: 5,
+    marginTop: isTablet ? 7 : 5,
   }
 })
 

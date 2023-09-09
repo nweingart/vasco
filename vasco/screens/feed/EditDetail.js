@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Animated, { useSharedValue, useAnimatedStyle, useAnimatedGestureHandler } from 'react-native-reanimated';
-import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
+
 
 import {
   Alert,
@@ -18,6 +18,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from '@react-navigation/native';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/Firebase'
+
+const screenWidth = Dimensions.get('window').width;
+
+const isTablet = screenWidth >= 768;
 
 const EditDetail = ({ route }) => {
   const navigation = useNavigation();
@@ -148,6 +152,9 @@ const EditDetail = ({ route }) => {
             : <Ionicons name="close-circle" size={35} color={'#FF0A0A'} />
           }
         </View>
+        <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          <Text style={{ fontWeight: '600', fontSize: isTablet ? 36 : 24  }}>Delivery Detail</Text>
+        </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={styles.dateText}>
             {formattedDate}
@@ -156,38 +163,41 @@ const EditDetail = ({ route }) => {
         </View>
         {isEditMode ? (
           <TextInput
+            placeholder={'Project'}
             style={styles.editableText}
             value={deliveryData.deliveryProject}
             onChangeText={(text) => setDeliveryData(prev => ({ ...prev, deliveryProject: text }))}
           />
         ) : (
-          <Text style={styles.projectText}>{deliveryData.deliveryProject}</Text>
+          <Text style={styles.projectText}>Project: {deliveryData.deliveryProject}</Text>
         )}
 
         {isEditMode ? (
           <TextInput
+            placeholder={'Vendor'}
             style={styles.editableText}
             value={deliveryData.deliveryVendor}
             onChangeText={(text) => setDeliveryData(prev => ({ ...prev, deliveryVendor: text }))}
           />
         ) : (
-          <Text style={styles.vendorText}>{deliveryData.deliveryVendor}</Text>
+          <Text style={styles.vendorText}>Vendor: {deliveryData.deliveryVendor}</Text>
         )}
         {isEditMode ? (
           <TextInput
+            placeholder={'Notes'}
             style={styles.editableText}
             value={deliveryData.deliveryNotes}
             onChangeText={(text) => setDeliveryData(prev => ({ ...prev, deliveryNotes: text }))}
           />
         ) : (
-          <Text style={styles.notesText}>{deliveryData.deliveryNotes}</Text>
+          <Text style={styles.notesText}>Notes: {deliveryData.deliveryNotes}</Text>
         )}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {images.map((url, index) => (
             <View key={index} style={{ position: 'relative', marginHorizontal: 5 }}>
               <TouchableOpacity onPress={() => setImageModalVisible(true)}>
                 <Image
-                  style={{ width: 100, height: 100, borderRadius: 5, marginTop: 25 }}
+                  style={{ width: isTablet ? 250 : 100, height: isTablet ? 250: 100, borderRadius: 5, marginTop: 25 }}
                   source={{ uri: url }}
                 />
               </TouchableOpacity>
@@ -202,12 +212,14 @@ const EditDetail = ({ route }) => {
             </View>
           ))}
         </ScrollView>
-        <TouchableOpacity style={styles.editButton} onPress={handleEditPress}>
-          <Text style={styles.editButtonText}>{isEditMode ? 'Save' : 'Edit Delivery'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeletePress(deliveryData.id)}>
-          <Text style={styles.deleteButtonText}>Delete</Text>
-        </TouchableOpacity>
+        <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          <TouchableOpacity style={styles.editButton} onPress={handleEditPress}>
+            <Text style={styles.editButtonText}>{isEditMode ? 'Save' : 'Edit Delivery'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeletePress(deliveryData.id)}>
+            <Text style={styles.deleteButtonText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
       <Modal
         visible={isImageModalVisible}
@@ -219,8 +231,8 @@ const EditDetail = ({ route }) => {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}  // Attach onScroll event here
-        scrollEventThrottle={16} // Adjust the frequency of the onScroll event
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {images.map((url, index) => (
           <Image
@@ -267,12 +279,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFC300',
     borderRadius: 5,
     alignItems: 'center',
+    width: isTablet ? '60%' : '90%',
   },
   deleteButton: {
     backgroundColor: 'red',
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
+    width: isTablet ? '60%' : '90%',
   },
   deleteButtonText: {
     color: 'black',
@@ -295,31 +309,31 @@ const styles = StyleSheet.create({
     right: 20
   },
   dateText:{
-    fontSize: 18,
+    fontSize: isTablet ? 24 : 18,
     fontWeight: '700',
     marginTop: 15,
     color: '#333',
   },
   projectText: {
-    fontSize: 16,
+    fontSize: isTablet ? 24 : 16,
     fontWeight: '500',
     marginTop: 15,
     color: '#333',
   },
   vendorText: {
-    fontSize: 16,
+    fontSize: isTablet ? 24 : 16,
     fontWeight: '500',
     marginTop: 15,
     color: '#333',
   },
   notesText: {
-    fontSize: 16,
+    fontSize: isTablet ? 24 : 16,
     fontWeight: '400',
     marginTop: 15,
     color: '#666',
   },
   timeText: {
-    fontSize: 18,
+    fontSize: isTablet ? 24 : 18,
     marginLeft: 5,
     marginTop: 15,
   }

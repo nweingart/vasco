@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {View, Text, TouchableOpacity, StyleSheet, Dimensions} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import DatePicker from "../../common/DatePicker";
 import { setStartDateFilter, setEndDateFilter, setStatusFilter } from "../../redux/redux";
+
+const screenWidth = Dimensions.get('window').width;
+
+const isTablet = screenWidth >= 768;
 
 const Filter = () => {
   const navigation = useNavigation();
@@ -93,9 +97,11 @@ const Filter = () => {
             <Text style={{ ...styles.statusOption, color: 'white'}}>Not Approved</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={{ ...styles.button, display: 'flex', justifyContent: 'center', alignItems: 'center' ,marginTop: 20 }} onPress={handleClearFilters}>
-          <Text style={styles.buttonText}>Clear Filters</Text>
-        </TouchableOpacity>
+        <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          <TouchableOpacity style={{ ...styles.button, width: isTablet ? '60%' : '90%', display: 'flex', justifyContent: 'center', alignItems: 'center' ,marginTop: 20 }} onPress={handleClearFilters}>
+            <Text style={styles.buttonText}>Clear Filters</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   )
@@ -124,7 +130,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   inputContainer: {
-    marginBottom: 20,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 300,
   },
   inputLabel: {
     fontSize: 16,
@@ -134,9 +143,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     backgroundColor: '#FFFFFF',
-  },
-  statusContainer: {
-    marginTop: 20,
   },
   statusLabel: {
     fontSize: 16,
@@ -152,6 +158,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: 'green',
     alignItems: 'center',
+   height: isTablet ? 40 : 40,
   },
   statusOption: {
     fontSize: 16,

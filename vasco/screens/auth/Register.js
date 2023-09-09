@@ -32,7 +32,7 @@ const Register = () => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
-        navigation.navigate("Home");
+        navigation.navigate("NewDelivery")
       }
     });
     return unsubscribe;

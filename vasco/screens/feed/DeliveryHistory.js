@@ -55,21 +55,23 @@ const DeliveryHistory = () => {
     if (lastDoc) {
       setDeliveries(prev => [...prev, ...deliveryData]);
     } else {
-      setDeliveries(deliveryData);  // reset the deliveries list if not paginating
+      setDeliveries(deliveryData);
     }
   };
 
   useFocusEffect(
-    useCallback(() => {
-      fetchDeliveries();
+    React.useCallback(() => {
+      if (!status && !startDate && !endDate) {
+        fetchDeliveries();
+      }
       return () => {};
-    }, [])
+    }, [status, startDate, endDate])
   );
 
 
   useEffect(() => {
-    setDeliveries([]); // Clear the current deliveries
-    fetchDeliveries(); // Fetch deliveries with the new filters
+    setDeliveries([]);
+    fetchDeliveries();
   }, [startDate, endDate, status]);
 
   useEffect(() => {
@@ -126,11 +128,9 @@ const DeliveryHistory = () => {
   }, [deliveries]);
 
   const renderDelivery = ({ item }) => {
-    // Extract the date from the Firestore timestamp
     const dateObject = new Date(item?.deliveryDate?.seconds * 1000);
     const formattedDate = dateObject.toDateString();
 
-    // This will give a time like '10:35 AM'
     const formattedTime = dateObject.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
     return (

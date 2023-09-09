@@ -1,8 +1,12 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native'
 import { useNavigation } from "@react-navigation/native"
 import { auth } from '../firebase/Firebase'
 import AppIcon from '../assets/appicon.png'
+
+const screenWidth = Dimensions.get('window').width;
+
+const isTablet = screenWidth >= 768;
 
 
 const Home = () => {
@@ -22,12 +26,13 @@ const Home = () => {
   }
 
   const handleNewDelivery = () => {
-    navigation.navigate("NewDelivery")
+    navigation.navigate("PhotoBackup")
   }
 
   const handleReceiptHistory = () => {
     navigation.navigate("DeliveryHistory")
   }
+
 
 
   return (
@@ -38,10 +43,10 @@ const Home = () => {
         </TouchableOpacity>
       </View>
       <View>
-        <Image style={{ height: 100, width: 100, marginBottom: 100, marginTop: -75 }} source={AppIcon} />
+        <Image style={{ height: isTablet ? 200 : 100, width: isTablet ? 200: 100, marginBottom: 100, marginTop: -75 }} source={AppIcon} />
       </View>
       <View style={{ zIndex: 5, marginBottom: 125, marginTop: -75  }}>
-        <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 24 }}>VASCO</Text>
+        <Text style={{ color: 'black', fontWeight: 'bold', fontSize: isTablet ? 36 : 24 }}>VASCO</Text>
       </View>
       <View style={styles.linkWrapper}>
         <TouchableOpacity style={styles.linkButtonWrapper} onPress={handleNewDelivery}>
@@ -92,13 +97,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFC300',
     borderRadius: 10,
-    height: 50,
-    width: 300,
-    marginTop: 25,
+    height: isTablet ? 75: 50,
+    width: isTablet ? 400 : 300,
+    marginTop: isTablet ? 40 : 25,
   },
   linkButtonText: {
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: isTablet ? 24 : 16,
   },
   brandTextWrapper: {
     position: 'absolute',

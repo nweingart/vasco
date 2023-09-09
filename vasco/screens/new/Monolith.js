@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { Dimensions } from 'react-native';
+
+const screenWidth = Dimensions.get('window').width;
+
+const isTablet = screenWidth >= 768;
 
 // ui imports
 import {
@@ -14,9 +19,9 @@ import {
   Platform,
   ScrollView,
 } from 'react-native'
-import RowItem from './RowItem'
+import Dropdown from "../../common/Dropdown";
+import RowItem from "../../common/RowItem";
 import Ionicons from '@expo/vector-icons/Ionicons'
-import DatePicker from '../../common/DatePicker'
 
 // navigation imports
 import { useNavigation } from '@react-navigation/native'
@@ -27,6 +32,7 @@ import {
   setDeliveryReceipts,
   setDeliveryPhotos,
   setDeliveryDate,
+  setDeliveryEmployee,
   setDeliveryProject,
   setDeliveryVendor,
   setDeliveryNotes,
@@ -40,8 +46,9 @@ import { useDispatch } from 'react-redux'
 import { db, auth } from '../../firebase/Firebase'
 import { collection, addDoc } from 'firebase/firestore'
 
-const NewDelivery = () => {
+const Monolith = () => {
   const [notes, setNotes] = useState('')
+  const [employee, setEmployee] = useState('')
   const [project, setProject] = useState('')
   const [vendor, setVendor] = useState('')
   const [status, setStatus] = useState('Not Approved')
@@ -52,6 +59,7 @@ const NewDelivery = () => {
   const deliveryReceipts = useSelector(state => state.deliveryReceipts)
   const deliveryPhotos = useSelector(state => state.deliveryPhotos)
   const deliveryDate = useSelector(state => state.deliveryDate)
+  const deliveryEmployee = useSelector(state => state.deliveryEmployee)
   const deliveryProject = useSelector(state => state.deliveryProject)
   const deliveryVendor = useSelector(state => state.deliveryVendor)
   const deliveryNotes = useSelector(state => state.deliveryNotes)
@@ -99,10 +107,6 @@ const NewDelivery = () => {
       }
     }
 
-  const handleDateConfirm = date => {
-    console.log(date)
-    dispatch(setDeliveryDate(date))
-  };
 
   const clearImages = () => {
     dispatch(setDeliveryPhotos([]))
@@ -204,10 +208,9 @@ const NewDelivery = () => {
     if (
       !deliveryReceipts ||
       !deliveryPhotos ||
-      !deliveryDate ||
+      !deliveryEmployee ||
       !deliveryProject ||
       !deliveryVendor ||
-      !deliveryNotes ||
       !deliveryStatus
     ) {
       setDisabled(true)
@@ -221,27 +224,28 @@ const NewDelivery = () => {
   }, [deliveryDate, deliveryPhotos, deliveryProject, deliveryStatus, deliveryNotes])
 
 
-  const handleProjectChange = text => {
-    setProject(text);
-    dispatch(setDeliveryProject(text));
+  const handleProjectChange = value => {
+    setProject(value);
+    dispatch(setDeliveryProject(value));
   };
 
-  const handleVendorChange = text => {
-    setVendor(text);
-    dispatch(setDeliveryVendor(text));
+  const handleVendorChange = value => {
+    setVendor(value);
+    dispatch(setDeliveryVendor(value));
   };
 
-  const handleNotesChange = text => {
-    setNotes(text);
-    dispatch(setDeliveryNotes(text));
+  const handleNotesChange = value => {
+    setNotes(value);
+    dispatch(setDeliveryNotes(value));
   };
 
-  const navigateToReceipts = () => {
-    navigation.navigate('UploadReceipts')
+  const handleEmployeeChange = value => {
+    setEmployee(value);
+    dispatch(setDeliveryEmployee(value));
   }
 
-  const navigateToPhotos = () => {
-    navigation.navigate('UploadPhotos')
+  const navigateToPhotoBackup = () => {
+    navigation.navigate('PhotoBackup')
   }
 
  const setApprovedOpacity = () => {
@@ -271,7 +275,7 @@ const NewDelivery = () => {
   console.log(deliveryPhotos?.length)
   const InformationItem = () => {
     return (
-      <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 70, width: 300, padding: 5, marginTop: 5 }}>
+      <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 70, width: isTablet ? '60%' : '90%', padding: 5, marginTop: 5 }}>
         <Text style={{ color: showInformation ? 'black' : 'white' }} >If all items listed on receipt are included and in good condition, please press approve. If not please press not approve.</Text>
       </View>
     )
@@ -288,46 +292,42 @@ const NewDelivery = () => {
           </View>
           <View>
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
-              <Text style={{ fontWeight: '600', fontSize: 24,}}>New Delivery</Text>
+              <Text style={{ fontWeight: '600', fontSize: isTablet? 36 : 24,}}>New Delivery</Text>
             </View>
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-              <RowItem onPress={navigateToReceipts} iconName={'receipt-outline'} text={'Add Receipts'} valueCount={deliveryReceipts?.length} />
+              <RowItem onPress={navigateToPhotoBackup} iconName={'image-outline'} text={'Add Photo Backup'} valueCount={deliveryReceipts?.length + deliveryPhotos?.length} />
             </View>
-            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <RowItem invalid={deliveryPhotos?.length === 0} onPress={navigateToPhotos} path={'UploadPhotos'} iconName={'image-outline'} text={'Add Photos of Material'} valueCount={deliveryPhotos?.length} />
-            </View>
-            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <DatePicker color={'#FFC300'} onConfirm={handleDateConfirm}/>
-            </View>
-            <View>
-              <View style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '-5%', marginTop: '5%' }}>
-                <Text style={{ ...styles.textBoxText,  marginLeft: '12.5%' }}>Project</Text>
-                <Ionicons name="medical" size={15} color={project === '' ? '#FF0A0A' : '#FFFFFF'} style={{ marginTop: -20, marginBottom: 10, marginLeft: '7%' }} />
-              </View>
-              <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 20 }}>
-                <TextInput
-                  style={{ ...styles.textBox, height: 50, width: '90%' }}
-                  value={project}
-                  placeholder={'Provide project name for materials'}
-                  onChangeText={handleProjectChange}
-                  autoCapitalize="sentences"
-                />
-              </View>
-            </View>
-            <View style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '-5%', marginTop: '5%' }}>
-              <Text style={{ ...styles.textBoxText,  marginLeft: '12.5%' }}>Vendor</Text>
-            </View>
-            <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 20 }}>
-              <TextInput
-                style={{ ...styles.textBox, height: 50, width: '90%' }}
-                value={vendor}
-                placeholder={'Provide vendor name for materials'}
-                onChangeText={handleVendorChange}
-                autoCapitalize="sentences"
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+              <Dropdown
+                defaultText={'Click to Select an Employee'}
+                required={true}
+                onValueChange={handleEmployeeChange}
+                icon={'person-outline'}
+                style={{ zIndex: 3 }}
+                data={['Evan, our guy', 'Dutiful Employee #1', 'Dutiful Employee #2']}
+                label="Employee"
+              />
+              <Dropdown
+                defaultText={'Click to Select a Project'}
+                required={true}
+                onValueChange={handleProjectChange}
+                icon={'business-outline'}
+                style={{ zIndex: 2 }}
+                data={['Big Project', 'Medium Project', 'Small Project']}
+                label="Project"
+              />
+              <Dropdown
+                defaultText={'Click to Select a Vendor'}
+                required={true}
+                onValueChange={handleVendorChange}
+                icon={'storefront-outline'}
+                style={{ zIndex: 100 }}
+                data={['Theranos', 'Enron', 'Dunder Mifflin']}
+                label="Vendor"
               />
             </View>
             <View style={{ justifyContent: 'center', alignItems: 'center'}}>
-              <View style={{ borderWidth: 2, borderColor: 'gray', height: 160, marginTop: 20, width: '90%', borderRadius: 10, padding: 2.5 }}>
+              <View style={{ borderWidth: 2, borderColor: 'gray', height: 160, marginTop: 20, width: isTablet ? '60%' : '90%', borderRadius: 10, padding: 2.5 }}>
                 <View style={{ display: 'flex', flexDirection: 'row'}}>
                   <Ionicons onPress={handleInformation} name="information-circle-outline" size={25} color={'black'} />
                   {
@@ -342,25 +342,27 @@ const NewDelivery = () => {
                       </View>
                   }
                 </View>
-                <View style={styles.buttonsWrapper}>
-                  <TouchableOpacity style={{...styles.button, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
-                    <Text style={styles.buttonText}>Approved</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{...styles.button, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={handleStatus}>
-                    <Text style={styles.buttonText}>Not Approved</Text>
-                  </TouchableOpacity>
+                <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10%', marginTop: isTablet ? 25 : 0}}>
+                  <View style={{ display: 'flex', flexDirection: 'row'}}>
+                    <TouchableOpacity style={{...styles.button, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
+                      <Text style={styles.buttonText}>Approved</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{...styles.button, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={handleStatus}>
+                      <Text style={styles.buttonText}>Not Approved</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </View>
-            <View style={{ marginBottom: '-5%', marginTop: '5%' }}>
-              <Ionicons name="medical" size={15} color={status === 'Not Approved' && notes === '' ? '#FF0A0A' : '#FFFFFF'} style={{  marginLeft: '7%' }} />
-              <Text style={{ ...styles.textBoxText, marginBottom: '5%', marginLeft: '12.5%', marginTop: '-5%' }}>Notes</Text>
+            <View style={{ marginTop: 60 }}>
+              <Ionicons name="medical" size={15} color={status === 'Not Approved' && notes === '' ? '#FF0A0A' : '#FFFFFF'} style={{  marginLeft: isTablet? '10%' : '7%', marginBottom: -20 }} />
+              <Text style={{ ...styles.textBoxText, marginBottom: -80, marginLeft: '12.5%' }}>Notes</Text>
             </View>
               {
                 status === 'Not Approved' ?
                   <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: '5%' }}>
                     <TextInput
-                    style={{...styles.textBox, width: '90%' }}
+                    style={{...styles.textBox, width: isTablet ? '60%' : '90%', height: isTablet ? 100 : 50 }}
                     value={notes}
                     placeholder={'If not approved, please provide reason why'}
                     onChangeText={handleNotesChange}
@@ -370,7 +372,7 @@ const NewDelivery = () => {
                   :
                   <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: '5%' }}>
                     <TextInput
-                    style={{...styles.textBox, width: '90%' }}
+                    style={{...styles.textBox, width: isTablet ? '60%' : '90%' }}
                     value={notes}
                     placeholder={'Give brief description of delivery items'}
                     onChangeText={handleNotesChange}
@@ -419,11 +421,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textBox: {
-    padding: 15,
-    paddingRight: 50,
-    paddingTop: 10,
-    height: 65,
-    width: 350,
+    padding: isTablet ? 10 : 15,
+    height: isTablet ? 70 : 65,
+    width: isTablet ? '60%' : '90%', // Adjust width for tablets
     borderRadius: 15,
     borderColor: 'gray',
     borderWidth: 1,
@@ -440,14 +440,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
+    width: isTablet ? '60%' : '90%'
   },
   button: {
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFC300',
-    padding: 15,
+    padding: isTablet ? 10 : 15,
     borderRadius: 10,
-    width: 150,
+    height: isTablet ? 70 : 65,
+    width: isTablet ? 200 : 150,
+    marginHorizontal: isTablet ? 20 : 0,
   },
   buttonText: {
     fontSize: 16,
@@ -461,4 +464,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default NewDelivery
+export default Monolith

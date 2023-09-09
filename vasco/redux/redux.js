@@ -9,6 +9,8 @@ const initialState = {
   deliveryNotes: '',
   deliveryProject: '',
   deliveryVendor: '',
+  deliveryDate: '',
+  deliveryEmployee: '',
   platform: '',
 }
 
@@ -22,6 +24,8 @@ const reducer = (state = initialState, action) => {
       return { ...state, deliveryPhotos: action.payload }
     case 'SET_DELIVERY_DATE':
       return { ...state, deliveryDate: action.payload }
+    case 'SET_DELIVERY_EMPLOYEE':
+      return { ...state, deliveryEmployee: action.payload }
     case 'SET_DELIVERY_PROJECT':
       return { ...state, deliveryProject: action.payload }
     case 'SET_DELIVERY_VENDOR':
@@ -75,6 +79,13 @@ const setDeliveryDate = (date) => {
   return {
     type: 'SET_DELIVERY_DATE',
     payload: date,
+  }
+}
+
+const setDeliveryEmployee = (employee) => {
+  return {
+    type: 'SET_DELIVERY_EMPLOYEE',
+    payload: employee,
   }
 }
 const setDeliveryProject = (project) => {
@@ -159,6 +170,7 @@ export {
   setDeliveryReceipts,
   setDeliveryPhotos,
   setDeliveryDate,
+  setDeliveryEmployee,
   setDeliveryProject,
   setDeliveryVendor,
   setDeliveryNotes,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, View, StyleSheet, TouchableOpacity, Text, FlatList, Image } from 'react-native';
+import {Alert, View, StyleSheet, TouchableOpacity, Text, FlatList, Image, Dimensions} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation} from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -7,11 +7,22 @@ import { setDeliveryReceipts, setReceiptsDownloadUrls } from "../redux/redux";
 import { useDispatch, useSelector } from "react-redux";
 import { uploadImageToFirebase } from "../utils/uploadImage";
 
+const screenWidth = Dimensions.get('window').width;
+
+const isTablet = screenWidth >= 768;
+
 const UploadReceipts = () => {
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      gestureEnabled: false
+    });
+  }, []);
+
   const dispatch = useDispatch();
   const deliveryReceipts = useSelector(state => state.deliveryReceipts);
 
@@ -80,11 +91,22 @@ const UploadReceipts = () => {
     }
   };
 
+  const deleteImage = (uri) => {
+    const filteredImages = images.filter(image => image !== uri);
+    setImages(filteredImages);
+  }
+
   const renderImage = ({item}) => (
     <View style={styles.imageContainer}>
+      <TouchableOpacity style={{...styles.deleteButton, marginLeft: 175, marginBottom: -25, zIndex: 10 }} onPress={() => deleteImage(item)}>
+        <View>
+          <Ionicons name="close-circle" size={25} color="red" />
+        </View>
+      </TouchableOpacity>
       <Image style={styles.image} source={{uri: item}} />
     </View>
   );
+
 
   return (
     <View style={styles.container}>
@@ -148,8 +170,8 @@ const styles = StyleSheet.create({
     fontWeight: 600,
   },
   imageList: {
-    height: 80,
-    maxHeight: 100,
+    height: 200,
+    maxHeight: 200,
     flexGrow: 0,
     marginTop: 20,
   },
@@ -157,9 +179,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: isTablet ? 200 : 100,
+    height: isTablet ? 200 : 100,
     borderRadius: 5,
+    marginTop: -5,
   },
   imagesHeading: {
     fontSize: 24,

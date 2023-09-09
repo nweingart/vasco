@@ -5,7 +5,7 @@ import 'react-native-get-random-values';
 import Register from './screens/auth/Register'
 import Login from './screens/auth/Login'
 import Home from './screens/Home'
-import NewDelivery from './screens/new/NewDelivery'
+import Monolith from './screens/new/Monolith'
 import DeliveryHistory from './screens/feed/DeliveryHistory'
 import SingleReceipt from './screens/SingleReceipt'
 import UploadReceipts from './screens/UploadReceipts'
@@ -13,6 +13,7 @@ import UploadPhotos from './screens/UploadPhotos'
 import Settings from './screens/Settings'
 import Filter from './screens/feed/Filter'
 import EditDetail from './screens/feed/EditDetail'
+import PhotoBackup from "./screens/new/PhotoBackup";
 
 // navigation imports
 import { NavigationContainer } from '@react-navigation/native'
@@ -39,9 +40,9 @@ const App = () => {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName={isAuthenticated ? 'NewDelivery' : 'Login'}>
+        <Stack.Navigator>
           <Stack.Screen options={{ headerShown: false}} name={"Home"} component={Home} />
-          <Stack.Screen options={{ headerShown: false}} name={"NewDelivery"} component={NewDelivery}  />
+          <Stack.Screen options={{ headerShown: false}} name={"NewDelivery"} component={Monolith}  />
           <Stack.Screen options={{ headerShown: false}} name={"DeliveryHistory"} component={DeliveryHistory} />
           <Stack.Screen options={{ headerShown: false}} name={"Filter"} component={Filter} />
           <Stack.Screen options={{ headerShown: false}} name={"SingleReceipt"} component={SingleReceipt} />
@@ -51,6 +52,7 @@ const App = () => {
           <Stack.Screen options={{ headerShown: false}} name={'EditDetail'} component={EditDetail} />
           <Stack.Screen options={{ headerShown: false}} name={"Register"} component={Register} />
           <Stack.Screen options={{ headerShown: false}} name={"Login"} component={Login} />
+          <Stack.Screen options={{ headerShown: false}} name={"PhotoBackup"} component={PhotoBackup} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

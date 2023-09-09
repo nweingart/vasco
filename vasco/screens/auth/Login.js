@@ -27,7 +27,7 @@ const Login = () => {
       .then(userCredentials => {
         const user = userCredentials.user
         console.log(`logged in with email ${user.email}`)
-        navigation.navigate("NewDelivery")
+        navigation.navigate("Home")
       })
       .catch(error => alert(error.message))
   }
