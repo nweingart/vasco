@@ -5,6 +5,10 @@ const screenWidth = Dimensions.get('window').width;
 
 const isTablet = screenWidth >= 768;
 
+import { employees } from "../../customer/employees/APEC";
+import { projects } from "../../customer/projects/APEC";
+import { vendors } from "../../customer/vendors/APEC";
+
 // ui imports
 import {
   Alert,
@@ -44,49 +48,52 @@ import { useDispatch } from 'react-redux'
 
 // firebase imports
 import { db, auth } from '../../firebase/Firebase'
-import { collection, addDoc } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 const Monolith = () => {
   const [notes, setNotes] = useState('')
-  const [employee, setEmployee] = useState('')
-  const [project, setProject] = useState('')
-  const [vendor, setVendor] = useState('')
   const [status, setStatus] = useState('Not Approved')
   const [showInformation, setShowInformation] = useState(false)
   const [disabled, setDisabled] = useState(true)
 
-  const email = auth.currentUser.email
-  const deliveryReceipts = useSelector(state => state.deliveryReceipts)
-  const deliveryPhotos = useSelector(state => state.deliveryPhotos)
-  const deliveryDate = useSelector(state => state.deliveryDate)
+  // for upload
+  const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
+  const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
   const deliveryEmployee = useSelector(state => state.deliveryEmployee)
   const deliveryProject = useSelector(state => state.deliveryProject)
   const deliveryVendor = useSelector(state => state.deliveryVendor)
-  const deliveryNotes = useSelector(state => state.deliveryNotes)
   const deliveryStatus = useSelector(state => state.deliveryStatus)
-  const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
-  const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
+  const deliveryNotes = useSelector(state => state.deliveryNotes)
+  const deliveryDate = useSelector(state => state.deliveryDate)
+  const email = auth.currentUser.email
+
+  // for local display
+  const deliveryReceipts = useSelector(state => state.deliveryReceipts)
+  const deliveryPhotos = useSelector(state => state.deliveryPhotos)
+
 
   const addDelivery = async ({
-     email,
-     deliveryDate,
+     deliveryPhotoDownloadUrls,
+     deliveryReceiptDownloadUrls,
+     deliveryEmployee,
      deliveryProject,
      deliveryVendor,
-     deliveryNotes,
      deliveryStatus,
-     deliveryPhotoDownloadUrls,
-     deliveryReceiptDownloadUrls
+     deliveryNotes,
+     deliveryDate,
+     email,
   }) => {
     try {
         const docRef = await addDoc(collection(db, 'deliveries'), {
-          email,
-          deliveryDate,
+          deliveryPhotoDownloadUrls,
+          deliveryReceiptDownloadUrls,
+          deliveryEmployee,
           deliveryProject,
           deliveryVendor,
-          deliveryNotes,
           deliveryStatus,
-          deliveryPhotoDownloadUrls,
-          deliveryReceiptDownloadUrls
+          deliveryNotes,
+          deliveryDate,
+          email,
         });
       console.log('Document written with ID: ', docRef.id);
     } catch (e) {
@@ -137,8 +144,6 @@ const Monolith = () => {
             dispatch(setReceiptsDownloadUrls([]));
             dispatch(setPhotoDownloadUrls([]));
             setNotes('')
-            setProject('')
-            setVendor('')
             setStatus('Not Approved')
             navigation.navigate('Home')
           }
@@ -168,14 +173,15 @@ const Monolith = () => {
             text: 'Yes',
             onPress: () => {
               addDelivery({
-                email,
-                deliveryDate,
+                deliveryPhotoDownloadUrls,
+                deliveryReceiptDownloadUrls,
+                deliveryEmployee,
                 deliveryProject,
                 deliveryVendor,
-                deliveryNotes,
                 deliveryStatus,
-                deliveryPhotoDownloadUrls,
-                deliveryReceiptDownloadUrls
+                deliveryNotes,
+                deliveryDate: serverTimestamp(),
+                email,
               }).then(() => {
                 console.log('Delivery Submitted')
                 dispatch(setDeliveryReceipts([]));
@@ -188,8 +194,6 @@ const Monolith = () => {
                 dispatch(setReceiptsDownloadUrls([]));
                 dispatch(setPhotoDownloadUrls([]));
                 setNotes('')
-                setProject('')
-                setVendor('')
                 setStatus('Not Approved')
                 Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
                 navigation.navigate("DeliveryHistory");
@@ -225,12 +229,10 @@ const Monolith = () => {
 
 
   const handleProjectChange = value => {
-    setProject(value);
     dispatch(setDeliveryProject(value));
   };
 
   const handleVendorChange = value => {
-    setVendor(value);
     dispatch(setDeliveryVendor(value));
   };
 
@@ -240,7 +242,7 @@ const Monolith = () => {
   };
 
   const handleEmployeeChange = value => {
-    setEmployee(value);
+    console.log(value)
     dispatch(setDeliveryEmployee(value));
   }
 
@@ -271,8 +273,6 @@ const Monolith = () => {
     }
   }
 
-  console.log(deliveryReceipts?.length)
-  console.log(deliveryPhotos?.length)
   const InformationItem = () => {
     return (
       <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: showInformation ? '#aeaea9' : 'white', borderRadius: 5, height: 70, width: isTablet ? '60%' : '90%', padding: 5, marginTop: 5 }}>
@@ -290,21 +290,19 @@ const Monolith = () => {
               <Ionicons name='arrow-back-outline' size={35} color={'black'} />
             </TouchableOpacity>
           </View>
-          <View>
+          <View style={{ height: '110%'}}>
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 15, marginTop: -30 }}>
               <Text style={{ fontWeight: '600', fontSize: isTablet? 36 : 24,}}>New Delivery</Text>
             </View>
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
               <RowItem onPress={navigateToPhotoBackup} iconName={'image-outline'} text={'Add Photo Backup'} valueCount={deliveryReceipts?.length + deliveryPhotos?.length} />
-            </View>
-            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
               <Dropdown
                 defaultText={'Click to Select an Employee'}
                 required={true}
                 onValueChange={handleEmployeeChange}
                 icon={'person-outline'}
                 style={{ zIndex: 3 }}
-                data={['Evan, our guy', 'Dutiful Employee #1', 'Dutiful Employee #2']}
+                data={employees}
                 label="Employee"
               />
               <Dropdown
@@ -313,21 +311,21 @@ const Monolith = () => {
                 onValueChange={handleProjectChange}
                 icon={'business-outline'}
                 style={{ zIndex: 2 }}
-                data={['Big Project', 'Medium Project', 'Small Project']}
+                data={projects}
                 label="Project"
               />
               <Dropdown
                 defaultText={'Click to Select a Vendor'}
                 required={true}
                 onValueChange={handleVendorChange}
-                icon={'storefront-outline'}
+                icon={'business-outline'}
                 style={{ zIndex: 100 }}
-                data={['Theranos', 'Enron', 'Dunder Mifflin']}
+                data={vendors}
                 label="Vendor"
               />
             </View>
             <View style={{ justifyContent: 'center', alignItems: 'center'}}>
-              <View style={{ borderWidth: 2, borderColor: 'gray', height: 160, marginTop: 20, width: isTablet ? '60%' : '90%', borderRadius: 10, padding: 2.5 }}>
+              <View style={{ marginTop: 50 }}>
                 <View style={{ display: 'flex', flexDirection: 'row'}}>
                   <Ionicons onPress={handleInformation} name="information-circle-outline" size={25} color={'black'} />
                   {
@@ -342,7 +340,7 @@ const Monolith = () => {
                       </View>
                   }
                 </View>
-                <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10%', marginTop: isTablet ? 25 : 0}}>
+                <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 20, marginTop: isTablet ? 25 : 0}}>
                   <View style={{ display: 'flex', flexDirection: 'row'}}>
                     <TouchableOpacity style={{...styles.button, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={handleStatus}>
                       <Text style={styles.buttonText}>Approved</Text>
@@ -354,33 +352,39 @@ const Monolith = () => {
                 </View>
               </View>
             </View>
-            <View style={{ marginTop: 60 }}>
-              <Ionicons name="medical" size={15} color={status === 'Not Approved' && notes === '' ? '#FF0A0A' : '#FFFFFF'} style={{  marginLeft: isTablet? '10%' : '7%', marginBottom: -20 }} />
-              <Text style={{ ...styles.textBoxText, marginBottom: -80, marginLeft: '12.5%' }}>Notes</Text>
+            <View>
+              <Ionicons name="medical" size={15} color={status === 'Not Approved' && notes === '' ? '#FF0A0A' : '#FFFFFF'} style={{  marginLeft: isTablet? '19%' : '7%', marginBottom: -20 }} />
             </View>
-              {
-                status === 'Not Approved' ?
-                  <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: '5%' }}>
+            {
+              status === 'Not Approved' ?
+                <View style={{ justifyContent: 'center', marginBottom: '5%' }}>
+                  <View style={{ width: isTablet ? '60%' : '90%', alignSelf: 'center' }}>
+                    <Text style={{ fontWeight: '600', fontSize: 18, marginLeft: 15, marginBottom: 5 }}>Notes</Text>
                     <TextInput
-                    style={{...styles.textBox, width: isTablet ? '60%' : '90%', height: isTablet ? 100 : 50 }}
-                    value={notes}
-                    placeholder={'If not approved, please provide reason why'}
-                    onChangeText={handleNotesChange}
-                    autoCapitalize="sentences"
-                  />
+                      style={{ ...styles.textBox, width: '100%', height: isTablet ? 100 : 50 }}
+                      value={notes}
+                      placeholder={'If not approved, please provide reason why'}
+                      onChangeText={handleNotesChange}
+                      autoCapitalize="sentences"
+                    />
                   </View>
-                  :
-                  <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: '5%' }}>
-                    <TextInput
-                    style={{...styles.textBox, width: isTablet ? '60%' : '90%' }}
-                    value={notes}
-                    placeholder={'Give brief description of delivery items'}
-                    onChangeText={handleNotesChange}
-                    autoCapitalize="sentences"
-                  />
                 </View>
-              }
-              <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10%'}}>
+                :
+                <View style={{ justifyContent: 'center', marginBottom: '5%' }}>
+                  <View style={{ width: isTablet ? '60%' : '90%', alignSelf: 'center' }}>
+                    <Text style={{ fontWeight: '600', fontSize: 18, marginLeft: 15, marginBottom: 5 }}>Notes</Text>
+                    <TextInput
+                      style={{ ...styles.textBox, width: '100%', height: isTablet ? 100 : 50 }}
+                      value={notes}
+                      placeholder={'Give brief description of delivery items'}
+                      onChangeText={handleNotesChange}
+                      autoCapitalize="sentences"
+                    />
+                  </View>
+                </View>
+            }
+
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',}}>
                 <View style={{ display: 'flex', flexDirection: 'row'}}>
                   <TouchableOpacity style={{...styles.button, marginRight: '2%' }} onPress={handleCancel}>
                     <Text style={styles.buttonText}>Cancel</Text>
@@ -390,6 +394,7 @@ const Monolith = () => {
                   </TouchableOpacity>
                 </View>
               </View>
+            <View style={{ height: 100, backgroundColor: 'transparent'}} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -402,6 +407,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     opacity: 0.9,
+    padding: 10,
   },
   backButtonWrapper: {
     marginBottom: 25,
@@ -423,7 +429,7 @@ const styles = StyleSheet.create({
   textBox: {
     padding: isTablet ? 10 : 15,
     height: isTablet ? 70 : 65,
-    width: isTablet ? '60%' : '90%', // Adjust width for tablets
+    width: isTablet ? '60%' : '90%',
     borderRadius: 15,
     borderColor: 'gray',
     borderWidth: 1,
@@ -432,7 +438,6 @@ const styles = StyleSheet.create({
   clearButton: {
     marginLeft: 35,
     marginTop: 130,
-    marginBottom: -130,
     zIndex: 5,
   },
   buttonsWrapper: {
@@ -440,7 +445,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
-    width: isTablet ? '60%' : '90%'
+    width: isTablet ? '60%' : '90%',
+    paddingBottom: 150,
   },
   button: {
     justifyContent: 'center',

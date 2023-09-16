@@ -32,6 +32,8 @@ const reducer = (state = initialState, action) => {
       return { ...state, emailReceipts: action.payload }
     case 'SET_MAILING_LIST':
       return { ...state, mailingList: action.payload }
+    case 'SET_EMPLOYEES':
+      return { ...state, employee: action.payload }
     case 'DELIVERY_STATUS':
       return { ...state, deliveryStatus: action.payload }
     case 'SET_RECEIPT_DOWNLOAD_URLS':

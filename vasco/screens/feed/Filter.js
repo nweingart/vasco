@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Dimensions} from "react-native";
-import {useDispatch, useSelector} from "react-redux";
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Modal } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import DatePicker from "../../common/DatePicker";
 import { setStartDateFilter, setEndDateFilter, setStatusFilter } from "../../redux/redux";
 
 const screenWidth = Dimensions.get('window').width;
-
 const isTablet = screenWidth >= 768;
 
 const Filter = () => {
@@ -21,6 +20,17 @@ const Filter = () => {
   const [startDate, setStartDate] = useState(startDateFilter || null);
   const [endDate, setEndDate] = useState(endDateFilter || null);
 
+  const [startDateModalVisible, setStartDateModalVisible] = useState(false);
+  const [endDateModalVisible, setEndDateModalVisible] = useState(false);
+
+  const toggleStartDateModal = () => {
+    setStartDateModalVisible(!startDateModalVisible);
+  };
+
+  const toggleEndDateModal = () => {
+    setEndDateModalVisible(!endDateModalVisible);
+  };
+
   const handleSave = () => {
     dispatch(setStatusFilter(status));
     dispatch(setStartDateFilter(startDate));
@@ -34,6 +44,7 @@ const Filter = () => {
 
   const handleStartDateConfirm = date => {
     setStartDate(date);
+    toggleStartDateModal();
   };
 
   const handleEndDateConfirm = date => {
@@ -41,6 +52,7 @@ const Filter = () => {
       alert("End Date must be after Start Date.");
     } else {
       setEndDate(date);
+      toggleEndDateModal();
     }
   }
 
@@ -79,33 +91,60 @@ const Filter = () => {
           <Text style={styles.buttonText}>Save</Text>
         </TouchableOpacity>
       </View>
+
       <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Start</Text>
-        <DatePicker color={'white'} onConfirm={handleStartDateConfirm} current={startDate} />
+        <TouchableOpacity onPress={toggleStartDateModal}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold'}}>{startDate ? `Start Date: ${ startDate.toDateString() }` : "Select Start Date"}</Text>
+        </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={startDateModalVisible}
+          onRequestClose={toggleStartDateModal}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <DatePicker color={'white'} onConfirm={handleStartDateConfirm} current={startDate} />
+            </View>
+          </View>
+        </Modal>
       </View>
       <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>End</Text>
-        <DatePicker color={'white'} onConfirm={handleEndDateConfirm} current={endDate} />
+        <TouchableOpacity onPress={toggleEndDateModal}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold'}}>{endDate ? `End Date: ${ endDate.toDateString() }` : "Select End Date"}</Text>
+        </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={endDateModalVisible}
+          onRequestClose={toggleEndDateModal}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <DatePicker color={'white'} onConfirm={handleEndDateConfirm} current={endDate} />
+            </View>
+          </View>
+        </Modal>
       </View>
-      <View style={styles.statusContainer}>
+      <View>
         <Text style={styles.statusLabel}>Status</Text>
         <View style={styles.statusOptionsContainer}>
-          <TouchableOpacity style={{ ...styles.statusOptionButton, backgroundColor: '#40D35D', opacity: setApprovedOpacity()}} onPress={() => setStatus('Approved')}>
-            <Text style={{ ...styles.statusOption, color: 'white'}}>Approved</Text>
+          <TouchableOpacity style={{ ...styles.statusOptionButton, backgroundColor: '#40D35D', opacity: setApprovedOpacity() }} onPress={() => setStatus('Approved')}>
+            <Text style={{ ...styles.statusOption, color: 'white' }}>Approved</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ ...styles.statusOptionButton, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity()}} onPress={() => setStatus('Not Approved')}>
-            <Text style={{ ...styles.statusOption, color: 'white'}}>Not Approved</Text>
+          <TouchableOpacity style={{ ...styles.statusOptionButton, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity() }} onPress={() => setStatus('Not Approved')}>
+            <Text style={{ ...styles.statusOption, color: 'white' }}>Not Approved</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-          <TouchableOpacity style={{ ...styles.button, width: isTablet ? '60%' : '90%', display: 'flex', justifyContent: 'center', alignItems: 'center' ,marginTop: 20 }} onPress={handleClearFilters}>
+        <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity style={{ ...styles.button, width: isTablet ? '60%' : '90%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 20 }} onPress={handleClearFilters}>
             <Text style={styles.buttonText}>Clear Filters</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -133,7 +172,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 300,
+    marginBottom: 50,
   },
   inputLabel: {
     fontSize: 16,
@@ -151,6 +190,7 @@ const styles = StyleSheet.create({
   statusOptionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 50,
   },
   statusOptionButton: {
     flex: 0.45,
@@ -162,6 +202,25 @@ const styles = StyleSheet.create({
   },
   statusOption: {
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+  },
+  modalContent: {
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    height: '90%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20
+  },
+  closeButton: {
+    position: 'absolute',
+    top: '90%',
+    right: 10,
   },
 })
 

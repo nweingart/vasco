@@ -41,18 +41,18 @@ const App = () => {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen options={{ headerShown: false}} name={"Home"} component={Home} />
-          <Stack.Screen options={{ headerShown: false}} name={"NewDelivery"} component={Monolith}  />
-          <Stack.Screen options={{ headerShown: false}} name={"DeliveryHistory"} component={DeliveryHistory} />
-          <Stack.Screen options={{ headerShown: false}} name={"Filter"} component={Filter} />
-          <Stack.Screen options={{ headerShown: false}} name={"SingleReceipt"} component={SingleReceipt} />
-          <Stack.Screen options={{ headerShown: false}} name={'UploadReceipts'} component={UploadReceipts} />
-          <Stack.Screen options={{ headerShown: false}} name={'UploadPhotos'} component={UploadPhotos} />
-          <Stack.Screen options={{ headerShown: false}} name={'Settings'} component={Settings} />
-          <Stack.Screen options={{ headerShown: false}} name={'EditDetail'} component={EditDetail} />
-          <Stack.Screen options={{ headerShown: false}} name={"Register"} component={Register} />
-          <Stack.Screen options={{ headerShown: false}} name={"Login"} component={Login} />
-          <Stack.Screen options={{ headerShown: false}} name={"PhotoBackup"} component={PhotoBackup} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Home"} component={Home} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"NewDelivery"} component={Monolith}  />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"DeliveryHistory"} component={DeliveryHistory} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Filter"} component={Filter} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"SingleReceipt"} component={SingleReceipt} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'UploadReceipts'} component={UploadReceipts} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'UploadPhotos'} component={UploadPhotos} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'Settings'} component={Settings} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'EditDetail'} component={EditDetail} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Register"} component={Register} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Login"} component={Login} />
+          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"PhotoBackup"} component={PhotoBackup} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

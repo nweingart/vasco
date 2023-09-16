@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { View, Alert, FlatList, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Alert, FlatList, Image, StyleSheet, TouchableOpacity, Text, Dimensions, BackHandler } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { uploadImageToFirebase } from "../../utils/uploadImage";
 import { setDeliveryPhotos, setPhotoDownloadUrls, setDeliveryReceipts, setReceiptsDownloadUrls } from '../../redux/redux'
 import Ionicons from "@expo/vector-icons/Ionicons";
+
+const screenWidth = Dimensions.get('window').width;
+
+const isTablet = screenWidth >= 768;
 
 const PhotoBackup = () => {
   const [photos, setPhotos] = useState([]);
@@ -44,7 +48,18 @@ const PhotoBackup = () => {
         setReceipts(prevReceipts => [...prevReceipts, ...uris]);
       }
     }
-  };
+  }
+
+  useEffect(() => {
+    const backAction = () => {
+      handleBack(); // Call your handleBack function when back is pressed
+      return true; // This will prevent the default action (i.e., going back) from occurring
+    };
+
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+    return () => backHandler.remove();
+  }, [photos, receipts]);
 
   const showImageOptions = (type) => {
     Alert.alert(
@@ -58,11 +73,11 @@ const PhotoBackup = () => {
     );
   }
 
-  const renderImageItem = ({ item, type }) => {
+  const renderImageItem = ({ item, index, type }) => {
     if (item === 'add') {
       return (
         <TouchableOpacity
-          style={[styles.uploadButton, { backgroundColor: '#D9D9D9' }]}
+          style={[styles.uploadButton, { backgroundColor: '#D9D9D9', borderRadius: 5 }]}
           onPress={() => showImageOptions(type)}
         >
           <Text style={[styles.plusSign, { color: 'green' }]}>+</Text>
@@ -70,7 +85,26 @@ const PhotoBackup = () => {
       );
     }
 
-    return <Image source={{ uri: item }} style={styles.image} />;
+    const handleRemoveImage = () => {
+      if (type === 'photo') {
+        const updatedPhotos = [...photos];
+        updatedPhotos.splice(index - 1, 1); // subtracting 1 because of the 'add' at the start
+        setPhotos(updatedPhotos);
+      } else if (type === 'receipt') {
+        const updatedReceipts = [...receipts];
+        updatedReceipts.splice(index - 1, 1);
+        setReceipts(updatedReceipts);
+      }
+    };
+
+    return (
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: item }} style={styles.image} />
+        <TouchableOpacity style={styles.removeButton} onPress={handleRemoveImage}>
+          <Ionicons name='close-circle' size={24} color={'red'} />
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const submitImages = async (imageArray, setFunction) => {
@@ -110,21 +144,21 @@ const PhotoBackup = () => {
               <Ionicons name='arrow-back-outline' size={45} color={'black'} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.title}>Add Photo Backup</Text>
+          <Text style={{ ...styles.title, fontSize: isTablet ? 36 : 24  }}>Add Photo Backup</Text>
           <View style={styles.section}>
             <View style={styles.section}>
-              <Text style={styles.headerText}>Add Receipts</Text>
+              <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Receipts</Text>
               <FlatList
                 horizontal
-                data={[...receipts, 'add']}
+                data={['add', ...receipts]}
                 renderItem={(props) => renderImageItem({ ...props, type: 'receipt' })}
                 keyExtractor={(item, index) => index.toString()}
               />
             </View>
-            <Text style={styles.headerText}>Add Photos of Material</Text>
+            <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Photos of Material</Text>
             <FlatList
               horizontal
-              data={[...photos, 'add']}
+              data={['add', ...photos ]}
               renderItem={(props) => renderImageItem({ ...props, type: 'photo' })}
               keyExtractor={(item, index) => index.toString()}
             />
@@ -153,11 +187,10 @@ const styles = StyleSheet.create({
   backButton: {
     zIndex: 5,
     position: 'absolute',
-    top: '10%', // Adjust this value to move it up or down
+    top: '12%', // Adjust this value to move it up or down
     left: '10%' // Adjust this value to move it left or right
   },
   title: {
-    fontSize: 36,
     fontWeight: 'bold',
     marginTop: 50,
     marginBottom: 20,
@@ -179,7 +212,18 @@ const styles = StyleSheet.create({
   image: {
     width: 120,   // Increase width of the image
     height: 120,  // Increase height of the image
-    marginLeft: 10,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 10,
+  },
+  removeButton: {
+    position: 'absolute',
+    right: 2.5,
+    top: -7.5,
+    padding: 5, // for larger touchable area
   },
   uploadButton: {
     width: 120,   // Same size as the image
@@ -187,12 +231,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'gray',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 10,
+    marginRight: 10
   },
   plusSign: {
     fontSize: 60,   // Slightly increased font size for the plus sign
     color: 'green',
-  }
+  },
 });
 
 export default PhotoBackup

@@ -7,19 +7,20 @@ const screenWidth = Dimensions.get('window').width;
 const isTablet = screenWidth >= 768;
 
 const DropdownModal = ({
-                         data,
-                         defaultText,  // Using aliasing to rename the prop to defaultText
-                         onValueChange,
-                         label,
-                         icon,
-                         required
-                       }) => {
+   data,
+   defaultText,
+   onValueChange,
+   label,
+   icon,
+   required
+}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
   const [items, setItems] = useState(data.map(item => ({ label: item, value: item })));
 
   const handleChange = (value) => {
+    console.log('Received value:', value);
     setSelectedValue(value);
     setModalVisible(false);
     if (onValueChange) {
@@ -31,7 +32,7 @@ const DropdownModal = ({
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      {required && !selectedValue && <Ionicons name={'medical'} size={15} color={'red'} style={{ marginRight: 10 }} />}
+      {required && !selectedValue && <Ionicons name={'medical'} size={15} color={'red'} style={{ marginLeft: -20, marginRight: 10 }} />}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
           <Ionicons name={icon} size={25} color={'black'} style={styles.iconStyle} />
@@ -40,27 +41,32 @@ const DropdownModal = ({
       </View>
       <Modal
         animationType="slide"
-        transparent={false}
+        transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(false);
         }}
       >
-        <View style={styles.modalContent}>
-          <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-            <Text style={styles.closeButtonText}>X</Text>
-          </TouchableOpacity>
-          {label && <Text style={styles.label}>{label}</Text>}
-          <DropDownPicker
-            open={dropdownOpen}
-            value={selectedValue}
-            items={items}
-            setOpen={setDropdownOpen}
-            setValue={handleChange}
-            setItems={setItems}
-            searchable={true}
-            placeholder={defaultText}
-          />
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Ionicons name="close" size={30} color="black" />
+            </TouchableOpacity>
+            {label && <Text style={styles.label}>{label}</Text>}
+            <DropDownPicker
+              open={dropdownOpen}
+              value={selectedValue}
+              items={items}
+              setOpen={setDropdownOpen}
+              setValue={(callback) => {
+                const value = callback(items);
+                handleChange(value);
+              }}
+              setItems={setItems}
+              searchable={true}
+              placeholder={defaultText}
+            />
+          </View>
         </View>
       </Modal>
     </View>
@@ -92,13 +98,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 5,
   },
-  modalContent: {
+  modalOverlay: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+  },
+  modalContent: {
     alignItems: 'center',
     backgroundColor: 'white',
-    padding: 60,
-    paddingTop: 60,
+    height: '90%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20
   },
   closeButton: {
     position: 'absolute',
