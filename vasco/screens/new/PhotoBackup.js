@@ -52,8 +52,8 @@ const PhotoBackup = () => {
 
   useEffect(() => {
     const backAction = () => {
-      handleBack(); // Call your handleBack function when back is pressed
-      return true; // This will prevent the default action (i.e., going back) from occurring
+      handleBack()
+      return true
     };
 
     const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.9)', // This makes it slightly transparent
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   loadingText: {
     fontSize: 20,
@@ -187,31 +187,31 @@ const styles = StyleSheet.create({
   backButton: {
     zIndex: 5,
     position: 'absolute',
-    top: '12%', // Adjust this value to move it up or down
-    left: '10%' // Adjust this value to move it left or right
+    top: '12%',
+    left: '10%'
   },
   title: {
     fontWeight: 'bold',
     marginTop: 50,
     marginBottom: 20,
-    alignSelf: 'center',  // Center the title
+    alignSelf: 'center',
   },
   section: {
     marginVertical: 15,
     width: '100%',
   },
   headerText: {
-    fontSize: 24,   // Increase font size for headers
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20, // Space between the header and images
+    marginBottom: 20,
   },
   imageRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   image: {
-    width: 120,   // Increase width of the image
-    height: 120,  // Increase height of the image
+    width: 120,
+    height: 120,
     borderRadius: 5,
     marginRight: 10,
   },
@@ -223,10 +223,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 2.5,
     top: -7.5,
-    padding: 5, // for larger touchable area
+    padding: 5,
   },
   uploadButton: {
-    width: 120,   // Same size as the image
+    width: 120,
     height: 120,
     backgroundColor: 'gray',
     alignItems: 'center',
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     marginRight: 10
   },
   plusSign: {
-    fontSize: 60,   // Slightly increased font size for the plus sign
+    fontSize: 60,
     color: 'green',
   },
 });

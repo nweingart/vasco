@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -12,7 +12,8 @@ const DropdownModal = ({
    onValueChange,
    label,
    icon,
-   required
+   required,
+   reduxValue,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -28,11 +29,17 @@ const DropdownModal = ({
     }
   };
 
-  const displayText = selectedValue || defaultText;
+  const displayText = reduxValue || selectedValue || defaultText;
+
+  useEffect(() => {
+    if (!reduxValue) {
+      setSelectedValue(null);
+    }
+  }, [reduxValue]);
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      {required && !selectedValue && <Ionicons name={'medical'} size={15} color={'red'} style={{ marginLeft: -20, marginRight: 10 }} />}
+      {required && !selectedValue && !reduxValue && <Ionicons name={'medical'} size={15} color={'red'} style={{ marginLeft: -20, marginRight: 10 }} />}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
           <Ionicons name={icon} size={25} color={'black'} style={styles.iconStyle} />

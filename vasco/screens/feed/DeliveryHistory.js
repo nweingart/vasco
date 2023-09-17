@@ -127,6 +127,17 @@ const DeliveryHistory = () => {
     setFilteredDeliveries(deliveries);
   }, [deliveries]);
 
+  const setStatusIcon = (status) => {
+    switch (status) {
+      case 'Approved':
+        return <Ionicons name="checkmark-circle-outline" size={25} color={'#40D35D'} style={{ marginHorizontal: 5 }} />;
+      case 'Not Approved':
+        return <Ionicons name="close-circle" size={25} color={'#FF0A0A'} style={{ marginHorizontal: 5 }} />;
+      default:
+        return null
+    }
+  }
+
   const renderDelivery = ({ item }) => {
     const dateObject = new Date(item?.deliveryDate?.seconds * 1000);
     const formattedDate = dateObject.toDateString();
@@ -206,7 +217,8 @@ const DeliveryHistory = () => {
           <Text style={styles.filterLabel}>Filters: </Text>
           {startDate && endDate && (
             <TouchableOpacity style={styles.badge} onPress={() => {dispatch(setStartDateFilter(null)); dispatch(setEndDateFilter(null))}}>
-              <Text style={styles.badgeText}>🗓 {startDate.toDateString()} - {endDate.toDateString()}</Text>
+              <Ionicons name={'calendar'} size={15} color={'#FFC300'} style={{ marginLeft: 5, marginRight: 5, marginBottom: 2.5 }} />
+              <Text style={styles.badgeText}>{startDate.toDateString()} - {endDate.toDateString()}</Text>
               <View style={{ marginLeft: 10, marginTop: 5 }}>
                 <Ionicons name={'close-circle'} size={15} color={'black'} />
               </View>
@@ -214,7 +226,8 @@ const DeliveryHistory = () => {
           )}
           {status && (
             <TouchableOpacity style={styles.badge} onPress={() => dispatch(setStatusFilter(null))}>
-              <Text style={styles.badgeText}>📝 {status}</Text>
+              {setStatusIcon(status)}
+              <Text style={styles.badgeText}>{status}</Text>
               <View style={{ marginLeft: 10, marginTop: 5 }}>
                 <Ionicons name={'close-circle'} size={15} color={'black'} />
               </View>

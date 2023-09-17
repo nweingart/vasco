@@ -91,10 +91,9 @@ const Filter = () => {
           <Text style={styles.buttonText}>Save</Text>
         </TouchableOpacity>
       </View>
-
       <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={toggleStartDateModal}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold'}}>{startDate ? `Start Date: ${ startDate.toDateString() }` : "Select Start Date"}</Text>
+        <TouchableOpacity style={{ display: 'flex', alignItems: 'center', padding: 15, backgroundColor: '#FFC300', width: 350, borderRadius: 5 }} onPress={toggleStartDateModal}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold'}}>{startDate ? `Start Date: ${ startDate.toDateString() }` : "Select Start Date"}</Text>
         </TouchableOpacity>
         <Modal
           animationType="slide"
@@ -110,8 +109,8 @@ const Filter = () => {
         </Modal>
       </View>
       <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={toggleEndDateModal}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold'}}>{endDate ? `End Date: ${ endDate.toDateString() }` : "Select End Date"}</Text>
+        <TouchableOpacity style={{ display: 'flex', alignItems: 'center', padding: 15, backgroundColor: '#FFC300', width: 350, borderRadius: 5 }} onPress={toggleEndDateModal}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold'}}>{endDate ? `End Date: ${ endDate.toDateString() }` : "Select End Date"}</Text>
         </TouchableOpacity>
         <Modal
           animationType="slide"

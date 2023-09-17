@@ -137,6 +137,7 @@ const Monolith = () => {
             dispatch(setDeliveryReceipts([]));
             dispatch(setDeliveryPhotos([]));
             dispatch(setDeliveryDate(null));
+            dispatch(setDeliveryEmployee(''))
             dispatch(setDeliveryProject(''));
             dispatch(setDeliveryVendor(''));
             dispatch(setDeliveryNotes(''));
@@ -184,15 +185,16 @@ const Monolith = () => {
                 email,
               }).then(() => {
                 console.log('Delivery Submitted')
-                dispatch(setDeliveryReceipts([]));
-                dispatch(setDeliveryPhotos([]));
-                dispatch(setDeliveryDate(null));
-                dispatch(setDeliveryProject(''));
-                dispatch(setDeliveryVendor(''));
-                dispatch(setDeliveryNotes(''));
-                dispatch(setDeliveryStatus('Not Approved'));
                 dispatch(setReceiptsDownloadUrls([]));
                 dispatch(setPhotoDownloadUrls([]));
+                dispatch(setDeliveryReceipts([]));
+                dispatch(setDeliveryPhotos([]));
+                dispatch(setDeliveryEmployee(''))
+                dispatch(setDeliveryProject(''));
+                dispatch(setDeliveryVendor(''));
+                dispatch(setDeliveryStatus('Not Approved'));
+                dispatch(setDeliveryNotes(''));
+                dispatch(setDeliveryDate(null));
                 setNotes('')
                 setStatus('Not Approved')
                 Alert.alert('Delivery Submitted', 'Your delivery has been submitted successfully');
@@ -304,6 +306,7 @@ const Monolith = () => {
                 style={{ zIndex: 3 }}
                 data={employees}
                 label="Employee"
+                reduxValue={deliveryEmployee}
               />
               <Dropdown
                 defaultText={'Click to Select a Project'}
@@ -313,15 +316,17 @@ const Monolith = () => {
                 style={{ zIndex: 2 }}
                 data={projects}
                 label="Project"
+                reduxValue={deliveryProject}
               />
               <Dropdown
                 defaultText={'Click to Select a Vendor'}
                 required={true}
                 onValueChange={handleVendorChange}
-                icon={'business-outline'}
+                icon={'cart-outline'}
                 style={{ zIndex: 100 }}
                 data={vendors}
                 label="Vendor"
+                reduxValue={deliveryVendor}
               />
             </View>
             <View style={{ justifyContent: 'center', alignItems: 'center'}}>
