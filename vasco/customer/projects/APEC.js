@@ -1,4 +1,4 @@
-export const projects = [
+export const apecProjects = [
   "P10571",
   "P10576",
   "P10578.1",

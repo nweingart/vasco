@@ -112,44 +112,59 @@ function DeliveryHistory() {
     setFilteredDeliveries(deliveries);
   }, [deliveries]);
 
-  const renderDelivery = (item) => {
+  const renderTableHeader = () => {
+    return (
+      <thead>
+      <tr>
+        <th style={styles.tableHeader}>Date</th>
+        <th style={styles.tableHeader}>Time</th>
+        <th style={styles.tableHeader}>Status</th>
+        <th style={styles.tableHeader}>Project</th>
+        <th style={styles.tableHeader}>Vendor</th>
+        <th style={styles.tableHeader}>Notes</th>
+        <th style={styles.tableHeader}>Images</th>
+      </tr>
+      </thead>
+    );
+  };
+
+  const renderTableRow = (item) => {
     const dateObject = new Date(item?.deliveryDate?.seconds * 1000);
     const formattedDate = dateObject.toDateString();
     const formattedTime = dateObject.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
     return (
-      <div key={item.id}>
-        <button onClick={() => { /* Navigate to EditDetail route */ }}>
-          <div>
-            <p>{formattedDate}</p>
-            <p>{formattedTime}</p>
-            <p>{item.deliveryStatus === 'Approved' ? '✔️' : '❌'}</p>
-            <p>{item.deliveryProject}</p>
-            <p>{item.deliveryVendor}</p>
-            <p>{item.deliveryNotes}</p>
-          </div>
-          <div>
-            {item?.deliveryPhotoDownloadUrls.concat(item?.deliveryReceiptDownloadUrls || []).map((url, index) => (
-              <img key={index} src={url} alt="Delivery" width="100" height="100" />
-            ))}
-          </div>
-        </button>
-      </div>
+      <tr key={item.id} onClick={() => { /* Navigate to EditDetail route */ }}>
+        <td style={styles.tableCell}>{formattedDate}</td>
+        <td style={styles.tableCell}>{formattedTime}</td>
+        <td style={styles.tableCell}>{item.deliveryStatus === 'Approved' ? '✔️' : '❌'}</td>
+        <td style={styles.tableCell}>{item.deliveryProject}</td>
+        <td style={styles.tableCell}>{item.deliveryVendor}</td>
+        <td style={styles.tableCell}>{item.deliveryNotes}</td>
+        <td style={styles.tableCell}>
+          {item?.deliveryPhotoDownloadUrls.concat(item?.deliveryReceiptDownloadUrls || []).map((url, index) => (
+            <img key={index} src={url} alt="Delivery" width="100" height="100" />
+          ))}
+        </td>
+      </tr>
     );
   };
 
   return (
-    <div>
+    <div style={styles.container}>
       <h1>Delivery History</h1>
-      <button onClick={handleSignOut}>Sign Out</button>
-      <div>
+      <div style={styles.signOutButton}>
+        <button onClick={handleSignOut}>Sign Out</button>
+      </div>
+      <div style={styles.searchContainer}>
         <input
           value={search}
           onChange={e => handleSearchChange(e.target.value)}
           placeholder="Search"
         />
-        <button onClick={handleClearSearch}>X</button>
-        <button onClick={() => { /* Handle filter logic */ }}>Filter</button>
+        <div style={styles.clearButton}>
+          <button onClick={handleClearSearch}>Clear Search</button>
+        </div>
       </div>
       <div>
         {startDate && endDate && (
@@ -163,11 +178,52 @@ function DeliveryHistory() {
           </button>
         )}
       </div>
-      <div>
-        {filteredDeliveries.map(item => renderDelivery(item))}
-      </div>
+      <table>
+        {renderTableHeader()}
+        <tbody>
+        {filteredDeliveries.map(item => renderTableRow(item))}
+        </tbody>
+      </table>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    padding: 20
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
+  tableHeader: {
+    backgroundColor: '#f2f2f2',
+    padding: '8px',
+    border: '1px solid #000',
+    textAlign: 'left',
+  },
+  tableCell: {
+    padding: '8px',
+    border: '1px solid #000',
+    textAlign: 'left',
+  },
+  signOutButton:{
+    textAlign: 'right'
+  },
+  searchContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginTop: 25,
+    marginBottom: 25,
+  },
+  searchBar: {
+    height: 100,
+    width: '100%',
+  },
+  clearButton: {
+    marginLeft: 25
+  }
+};
+
 
 export default DeliveryHistory;

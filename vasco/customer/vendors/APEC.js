@@ -1,4 +1,4 @@
-export const vendors =  ["1000Bulbs",
+export const apecVendors =  ["1000Bulbs",
   "11x17",
   "16246Allied Electronics & Automation",
   "7West Design",

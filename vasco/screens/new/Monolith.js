@@ -5,9 +5,9 @@ const screenWidth = Dimensions.get('window').width;
 
 const isTablet = screenWidth >= 768;
 
-import { employees } from "../../customer/employees/APEC";
-import { projects } from "../../customer/projects/APEC";
-import { vendors } from "../../customer/vendors/APEC";
+import { apecEmployees } from "../../customer/employees/APEC";
+import { apecProjects } from "../../customer/projects/APEC";
+import { apecVendors } from "../../customer/vendors/APEC";
 
 // ui imports
 import {
@@ -55,8 +55,10 @@ const Monolith = () => {
   const [status, setStatus] = useState('Not Approved')
   const [showInformation, setShowInformation] = useState(false)
   const [disabled, setDisabled] = useState(true)
+  const [employees, setEmployees] = useState([])
+  const [vendors, setVendors] = useState([])
+  const [projects, setProjects] = useState([])
 
-  // for upload
   const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
   const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
   const deliveryEmployee = useSelector(state => state.deliveryEmployee)
@@ -67,7 +69,29 @@ const Monolith = () => {
   const deliveryDate = useSelector(state => state.deliveryDate)
   const email = auth.currentUser.email
 
-  // for local display
+  console.log(email)
+
+  const setData = () => {
+    if (email.includes('@apecengineering.com') || email.includes('nweingart12@gmail.com')) {
+      setEmployees(apecEmployees);
+      setVendors(apecVendors);
+      setProjects(apecProjects);
+    } else {
+      setEmployees([]);
+      setVendors([]);
+      setProjects([]);
+    }
+  };
+
+  useEffect(() => {
+    setData();
+  }, [email, apecEmployees, apecVendors, apecProjects]);
+
+  console.log(email)
+  console.log(employees)
+  console.log(vendors)
+  console.log(projects)
+
   const deliveryReceipts = useSelector(state => state.deliveryReceipts)
   const deliveryPhotos = useSelector(state => state.deliveryPhotos)
 

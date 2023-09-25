@@ -20,6 +20,10 @@ const DropdownModal = ({
   const [selectedValue, setSelectedValue] = useState(null);
   const [items, setItems] = useState(data.map(item => ({ label: item, value: item })));
 
+  useEffect(() => {
+    setItems(data.map(item => ({ label: item, value: item })));
+  }, [data]);
+
   const handleChange = (value) => {
     console.log('Received value:', value);
     setSelectedValue(value);
