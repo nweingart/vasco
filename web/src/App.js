@@ -10,6 +10,7 @@ import Sidebar from "./common/Sidebar";
 import Users from "./views/dashboard/Users";
 import Vendors from "./views/dashboard/Vendors";
 import Projects from "./views/dashboard/Projects";
+import Settings from './views/settings/index'
 
 function App() {
   return (
@@ -38,6 +39,11 @@ function App() {
               <Route path="projects" element={
                 <Sidebar>
                   <Projects />
+                </Sidebar>
+              } />
+              <Route path="settings" element={
+                <Sidebar>
+                  <Settings />
                 </Sidebar>
               } />
             </Route>
