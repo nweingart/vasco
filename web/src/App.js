@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from './views/dashboard/DeliveryHistory'
 import Login from './views/auth/Login'
 import Register from './views/auth/Register'
 import { AuthProvider } from './context/context';
@@ -11,6 +10,8 @@ import Users from "./views/dashboard/Users";
 import Vendors from "./views/dashboard/Vendors";
 import Projects from "./views/dashboard/Projects";
 import Settings from './views/settings/index'
+import DeliveryDetail from './views/dashboard/feed/DeliveryDetail'
+import Dashboard from "./views/dashboard/feed";
 
 function App() {
   return (
@@ -44,6 +45,11 @@ function App() {
               <Route path="settings" element={
                 <Sidebar>
                   <Settings />
+                </Sidebar>
+              } />
+              <Route path="delivery/:id" element={
+                <Sidebar>
+                  <DeliveryDetail />
                 </Sidebar>
               } />
             </Route>
