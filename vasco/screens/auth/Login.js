@@ -1,106 +1,85 @@
-import React, { useState, useEffect } from 'react'
-import {View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image} from 'react-native'
-// firebase imports
-import { auth } from '../../firebase/Firebase'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-
-// navigation imports
-import { useNavigation } from '@react-navigation/native'
-import AppIcon from "../../assets/appicon.png";
+import React, { useState } from 'react'
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, TextInput, Image } from 'react-native'
+import { useAuth } from './AuthContext'
+import AppIcon from "../../assets/appicon.png"
+import { useNavigation } from '@react-navigation/native';
 
 const Login = () => {
-  const navigation = useNavigation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const navigation = useNavigation();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (user) {
-        navigation.navigate("Home")
-      }
-    })
-    return unsubscribe
-  }, [])
+  const handleLogin = async () => {
+    try {
+      await login(email, password);
+    } catch (error) {
+      alert("Login failed: " + error.message);
+    }
+  };
 
-  const handleLogin = () => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then(userCredentials => {
-        const user = userCredentials.user
-        console.log(`logged in with email ${user.email}`)
-        navigation.navigate("Home")
-      })
-      .catch(error => alert(error.message))
-  }
-
-  const handleRegister = () => {
-    navigation.navigate("Register")
+  const handleCreate = () => {
+    navigation.navigate('CreateOrganization');
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior="padding"
-    >
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View>
-        <Image style={{ height: 100, width: 100, marginBottom: 100, marginTop: -75 }} source={AppIcon} />
+        <Image style={styles.logo} source={AppIcon} />
       </View>
-      <View style={{ zIndex: 5, marginBottom: 25, marginTop: -75  }}>
-        <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 24 }}>VASCO</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>VASCO</Text>
       </View>
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Company email"
           value={email}
-          onChangeText={text => setEmail(text)}
+          onChangeText={setEmail}
           style={styles.input}
           autoCapitalize="none"
         />
         <TextInput
           placeholder="Password"
           value={password}
-          onChangeText={text => setPassword(text)}
+          onChangeText={setPassword}
           style={styles.input}
           secureTextEntry={true}
         />
       </View>
-      <View>
-        <TouchableOpacity
-          onPress={handleLogin}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.register}>
-        <TouchableOpacity onPress={handleRegister}>
-          <Text style={styles.bottomText}>
-            New to Vasco? Create an account here
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={handleLogin} style={styles.button}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleCreate} style={styles.createLink}>
+        <Text style={styles.buttonText}>New to Vasco? Create Organization</Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
   },
-  logoWrapper: {
-    position: 'absolute',
-    top: '20%',
+  logo: {
+    height: 100,
+    width: 100,
+    marginBottom: 100,
+    marginTop: -75
+  },
+  titleContainer: {
+    zIndex: 5,
+    marginBottom: 25,
+    marginTop: -75
+  },
+  title: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: 24
   },
   inputContainer: {
     width: '80%'
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#FFC300',
-    marginBottom: 25
   },
   input: {
     backgroundColor: 'white',
@@ -112,16 +91,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D3D3D3',
   },
-  buttonContainer: {
-    width: '60%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 40,
-  },
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
+    width: '80%',
     backgroundColor: '#FFC300',
     padding: 15,
     borderRadius: 10,
@@ -129,22 +102,12 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'black',
-    fontWeight: 600,
+    fontWeight: 'bold',
     fontSize: 16,
   },
-  buttonOutline: {
-    backgroundColor: 'white',
-    marginTop: 10,
-    borderColor: 'gray',
-    borderWidth: 1,
-  },
-  register: {
-    marginTop: 50,
-  },
-  bottomText: {
-    fontWeight: '700',
-    fontSize: 14,
+  createLink: {
+    marginTop: 20,
   }
-})
+});
 
 export default Login

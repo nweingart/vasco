@@ -5,10 +5,6 @@ const screenWidth = Dimensions.get('window').width;
 
 const isTablet = screenWidth >= 768;
 
-import { apecEmployees } from "../../customer/employees/APEC";
-import { apecProjects } from "../../customer/projects/APEC";
-import { apecVendors } from "../../customer/vendors/APEC";
-
 // ui imports
 import {
   Alert,
@@ -55,9 +51,6 @@ const Monolith = () => {
   const [status, setStatus] = useState('Not Approved')
   const [showInformation, setShowInformation] = useState(false)
   const [disabled, setDisabled] = useState(true)
-  const [employees, setEmployees] = useState([])
-  const [vendors, setVendors] = useState([])
-  const [projects, setProjects] = useState([])
 
   const deliveryPhotoDownloadUrls = useSelector(state => state.photoDownloadURLs)
   const deliveryReceiptDownloadUrls = useSelector(state => state.receiptDownloadURLs)
@@ -67,30 +60,6 @@ const Monolith = () => {
   const deliveryStatus = useSelector(state => state.deliveryStatus)
   const deliveryNotes = useSelector(state => state.deliveryNotes)
   const deliveryDate = useSelector(state => state.deliveryDate)
-  const email = auth.currentUser.email
-
-  console.log(email)
-
-  const setData = () => {
-    if (email.includes('@apecengineering.com') || email.includes('nweingart12@gmail.com')) {
-      setEmployees(apecEmployees);
-      setVendors(apecVendors);
-      setProjects(apecProjects);
-    } else {
-      setEmployees([]);
-      setVendors([]);
-      setProjects([]);
-    }
-  };
-
-  useEffect(() => {
-    setData();
-  }, [email, apecEmployees, apecVendors, apecProjects]);
-
-  console.log(email)
-  console.log(employees)
-  console.log(vendors)
-  console.log(projects)
 
   const deliveryReceipts = useSelector(state => state.deliveryReceipts)
   const deliveryPhotos = useSelector(state => state.deliveryPhotos)
@@ -206,7 +175,6 @@ const Monolith = () => {
                 deliveryStatus,
                 deliveryNotes,
                 deliveryDate: serverTimestamp(),
-                email,
               }).then(() => {
                 console.log('Delivery Submitted')
                 dispatch(setReceiptsDownloadUrls([]));
@@ -258,19 +226,11 @@ const Monolith = () => {
     dispatch(setDeliveryProject(value));
   };
 
-  const handleVendorChange = value => {
-    dispatch(setDeliveryVendor(value));
-  };
 
   const handleNotesChange = value => {
     setNotes(value);
     dispatch(setDeliveryNotes(value));
   };
-
-  const handleEmployeeChange = value => {
-    console.log(value)
-    dispatch(setDeliveryEmployee(value));
-  }
 
   const navigateToPhotoBackup = () => {
     navigation.navigate('PhotoBackup')
@@ -322,36 +282,6 @@ const Monolith = () => {
             </View>
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
               <RowItem onPress={navigateToPhotoBackup} iconName={'image-outline'} text={'Add Photo Backup'} valueCount={deliveryReceipts?.length + deliveryPhotos?.length} />
-              <Dropdown
-                defaultText={'Click to Select an Employee'}
-                required={true}
-                onValueChange={handleEmployeeChange}
-                icon={'person-outline'}
-                style={{ zIndex: 3 }}
-                data={employees}
-                label="Employee"
-                reduxValue={deliveryEmployee}
-              />
-              <Dropdown
-                defaultText={'Click to Select a Project'}
-                required={true}
-                onValueChange={handleProjectChange}
-                icon={'business-outline'}
-                style={{ zIndex: 2 }}
-                data={projects}
-                label="Project"
-                reduxValue={deliveryProject}
-              />
-              <Dropdown
-                defaultText={'Click to Select a Vendor'}
-                required={true}
-                onValueChange={handleVendorChange}
-                icon={'cart-outline'}
-                style={{ zIndex: 100 }}
-                data={vendors}
-                label="Vendor"
-                reduxValue={deliveryVendor}
-              />
             </View>
             <View style={{ justifyContent: 'center', alignItems: 'center'}}>
               <View style={{ marginTop: 50 }}>

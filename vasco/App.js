@@ -1,62 +1,81 @@
-import React, { useState, useEffect } from 'react'
-import { auth } from "./firebase/Firebase";
-import 'react-native-get-random-values';
-// screen imports
-import Register from './screens/auth/Register'
-import Login from './screens/auth/Login'
-import Home from './screens/Home'
-import Monolith from './screens/new/Monolith'
-import DeliveryHistory from './screens/feed/DeliveryHistory'
-import SingleReceipt from './screens/SingleReceipt'
-import UploadReceipts from './screens/UploadReceipts'
-import UploadPhotos from './screens/UploadPhotos'
-import Settings from './screens/Settings'
-import Filter from './screens/feed/Filter'
-import EditDetail from './screens/feed/EditDetail'
-import PhotoBackup from "./screens/new/PhotoBackup";
-
-// navigation imports
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native'
-import { createNativeStackNavigator} from 'react-native-screens/native-stack'
+import { createStackNavigator } from '@react-navigation/stack'
 
-// redux imports
-import { Provider } from 'react-redux'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { Provider as ReduxProvider } from 'react-redux'
 import { store } from './redux/redux'
+import { AuthProvider, useAuth } from './screens/auth/AuthContext'
+import Ionicons from '@expo/vector-icons/Ionicons';
 
-const Stack = createNativeStackNavigator();
+// Import Screens
+import Login from './screens/auth/Login'
+import CreateOrganization from "./screens/auth/CreateOrganization";
+import CalendarComponent from './screens/calendar/Calendar'
+import Settings from './screens/settings/Settings';
+import DeliveryHistory from "./screens/feed/DeliveryHistory";
 
-const App = () => {
+const Stack = createStackNavigator()
+const Tab = createBottomTabNavigator();
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+const BottomTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      setIsAuthenticated(!!user);
-    });
+          if (route.name === 'Calendar') {
+            iconName = focused ? 'calendar' : 'calendar-outline';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings-outline';
+          } else if (route.name === 'Feed') {
+            iconName = focused ? 'list' : 'list-outline';
+          }
 
-    return () => unsubscribe();
-  }, []);
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#FFC300',
+        tabBarInactiveTintColor: 'gray',
+      })}
+      tabBarOptions={{
+        showLabel: false,
+      }}
+    >
+      <Tab.Screen options={{ headerShown: false }} name="Calendar" component={CalendarComponent} />
+      <Tab.Screen options={{ headerShown: false }} name="Feed" component={DeliveryHistory} />
+      <Tab.Screen options={{ headerShown: false }} name="Settings" component={Settings} />
+    </Tab.Navigator>
+  );
+}
+
+function AppNavigator() {
+  const { authToken } = useAuth();
 
   return (
-    <Provider store={store}>
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Home"} component={Home} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"NewDelivery"} component={Monolith}  />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"DeliveryHistory"} component={DeliveryHistory} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Filter"} component={Filter} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"SingleReceipt"} component={SingleReceipt} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'UploadReceipts'} component={UploadReceipts} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'UploadPhotos'} component={UploadPhotos} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'Settings'} component={Settings} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={'EditDetail'} component={EditDetail} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Register"} component={Register} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"Login"} component={Login} />
-          <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name={"PhotoBackup"} component={PhotoBackup} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </Provider>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {authToken ? (
+        <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
+      ) : (
+        <>
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="CreateOrganization" component={CreateOrganization} />
+        </>
+      )}
+    </Stack.Navigator>
   )
+}
+
+const App = () => {
+  return (
+    <ReduxProvider store={store}>
+      <AuthProvider>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </AuthProvider>
+    </ReduxProvider>
+  );
 }
 
 export default App

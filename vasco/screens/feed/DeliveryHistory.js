@@ -17,8 +17,6 @@ const DeliveryHistory = () => {
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
-
-  const userEmail = auth.currentUser.email;
   const startDate = useSelector(state => state.startDateFilter);
   const endDate = useSelector(state => state.endDateFilter);
   const status = useSelector(state => state.statusFilter);
@@ -26,7 +24,7 @@ const DeliveryHistory = () => {
   const fetchDeliveries = async (lastDoc = null) => {
     let deliveryQuery = query(
       collection(db, 'deliveries'),
-      where('email', '==', userEmail),
+      where('orgId', '==', orgId),
       orderBy('deliveryDate', 'desc')
     );
 
@@ -103,9 +101,6 @@ const DeliveryHistory = () => {
     navigation.navigate('Home')
   }
 
-  const handleFilter = () => {
-    navigation.navigate('Filter')
-  }
 
   const handleSearchChange = (text) => {
     setSearch(text);
@@ -202,13 +197,6 @@ const DeliveryHistory = () => {
         <View style={styles.clearSearchContainer}>
           <TouchableOpacity onPress={handleClearSearch}>
             <Ionicons name="close-circle" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.rightIconContainer}>
-          <TouchableOpacity onPress={handleFilter}>
-            <View style={{ backgroundColor:'white', borderRadius: 5 }}>
-              <Ionicons name="options" size={35} color={endDate || startDate || status ? '#FFC300' : 'black'} />
-            </View>
           </TouchableOpacity>
         </View>
       </View>
