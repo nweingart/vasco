@@ -189,25 +189,23 @@ const CalendarComponent = () => {
               <View style={{ flex: 1 }}>
                 <View style={{ display: 'flex', flexDirection: 'column'}}>
                   <Text style={styles.eventText}>
-                    {event.vendor}
+                    Vendor: {event.vendor}
                   </Text>
                   <Text style={styles.eventText}>
-                    {event.material}
+                    Description: {event.material}
                   </Text>
                   <Text style={styles.eventText}>
-                    {event.project}
+                    Project: {event.project}
                   </Text>
                   <Text style={styles.eventText}>
-                    {event.notes}
+                    Notes: {event.notes}
                   </Text>
-                  <View style={{ display: 'flex', flexDirection: 'row'}}>
+                  <Text style={styles.eventText}>
+                    Subcontractor: {event.subcontractor}
+                  </Text>
                     <Text style={styles.eventText}>
-                      {event.subcontractor}
+                       User: {event.user}
                     </Text>
-                    <Text style={styles.eventText}>
-                      {event.user}
-                    </Text>
-                  </View>
                 </View>
                 {event.isSubmitted && event.status === 'Approved' && (
                   <Ionicons name="checkmark-circle-outline" size={24} color="green" />
