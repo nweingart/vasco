@@ -124,6 +124,11 @@ const PhotoBackup = () => {
   }
 
   const handleBack = () => {
+    navigation.goBack()
+  }
+
+  /*
+  const handleNext = () => {
     navigation.navigate("NewDelivery")
     submitImages(photos, setPhotos)
       .then(() => {
@@ -136,6 +141,8 @@ const PhotoBackup = () => {
         console.error('There was an error uploading the images:', error);
       });
   };
+   */
+
 
   return (
         <View style={styles.container}>

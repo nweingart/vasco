@@ -3,17 +3,20 @@ import { Calendar } from 'react-native-calendars';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CalendarModal from './CalendarModal';
-import { useSelector } from 'react-redux';
 import { query, collection, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/Firebase';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment-timezone';
+import { useAuth } from "../auth/AuthContext";
 
 const CalendarComponent = () => {
   const [selectedDay, setSelectedDay] = useState(getCurrentDate());
   const [markedDates, setMarkedDates] = useState(getMarkedDates());
   const [deliveries, setDeliveries] = useState({});
   const navigation = useNavigation();
+  const { orgId } = useAuth();
+
+  console.log(orgId)
 
   const navigateToPhotoBackup = (vendor, subcontractor, project, deliveryId) => {
     navigation.navigate('PhotoBackup', { deliveryData: {
@@ -24,10 +27,11 @@ const CalendarComponent = () => {
       }});
   };
 
-  const orgId = useSelector(state => state.orgId);
 
   useEffect(() => {
     let unsubscribe = () => {};
+
+    console.log(orgId)
 
     if (orgId) {
       const queryRef = query(collection(db, 'ScheduledDeliveries'), where('orgId', '==', orgId));
@@ -45,17 +49,19 @@ const CalendarComponent = () => {
           }
         });
 
-        setTimeout(() => {
-          setDeliveries(newDeliveries);
-          setMarkedDates(getMarkedDates(newDeliveries));
-        }, 0);
+        setDeliveries(newDeliveries);
+        setMarkedDates(getMarkedDates(newDeliveries));
       }, (error) => {
         console.error('Error fetching deliveries:', error);
       });
     }
 
-    return () => unsubscribe();
-  }, [orgId]);
+    return () => unsubscribe()
+  }, [orgId])
+
+  useEffect(() => {
+    setMarkedDates(getMarkedDates());
+  }, [deliveries]);
 
   function getCurrentDate() {
     const today = new Date();
@@ -72,15 +78,18 @@ const CalendarComponent = () => {
     for (let date in deliveries) {
       markedDates[date] = {
         dots: [{ color: '#FFC300', selectedDotColor: 'white' }],
-        marked: true
+        marked: true,
+        selected: date === selectedDay,
+        selectedColor: date === selectedDay ? '#FFC300' : undefined
       };
     }
 
-    markedDates[today] = {
-      ...markedDates[today],
-      selected: true,
-      selectedColor: 'gray'
-    };
+    if (!markedDates[today]) {
+      markedDates[today] = {
+        selected: true,
+        selectedColor: 'gray'
+      };
+    }
 
     return markedDates;
   }
@@ -122,9 +131,34 @@ const CalendarComponent = () => {
     setModalVisible(false);
   };
 
-  const handleModalSubmit = (eventData) => {
+  const handleModalSubmit = (newDelivery) => {
     setModalVisible(false);
   };
+
+  /*const handleModalSubmit = (newDelivery) => {
+    console.log("Before update:", deliveries);
+
+    setDeliveries(prevDeliveries => {
+      const estDate = moment(newDelivery.deliveryDate).tz('America/New_York').format('YYYY-MM-DD');
+      const updatedDeliveries = { ...prevDeliveries };
+
+      if (updatedDeliveries[estDate]) {
+        updatedDeliveries[estDate] = [...updatedDeliveries[estDate], newDelivery];
+      } else {
+        updatedDeliveries[estDate] = [newDelivery];
+      }
+
+      console.log("After update:", updatedDeliveries);
+      return updatedDeliveries;
+    });
+
+    updateMarkedDates(newDelivery.deliveryDate);
+    setModalVisible(false);
+  };
+
+   */
+
+
 
   return (
     <View style={styles.container}>
@@ -152,10 +186,29 @@ const CalendarComponent = () => {
               style={styles.eventItem}
               key={index}
             >
-              <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.eventText}>
-                  {event.vendor} - {event.material}
-                </Text>
+              <View style={{ flex: 1 }}>
+                <View style={{ display: 'flex', flexDirection: 'column'}}>
+                  <Text style={styles.eventText}>
+                    {event.vendor}
+                  </Text>
+                  <Text style={styles.eventText}>
+                    {event.material}
+                  </Text>
+                  <Text style={styles.eventText}>
+                    {event.project}
+                  </Text>
+                  <Text style={styles.eventText}>
+                    {event.notes}
+                  </Text>
+                  <View style={{ display: 'flex', flexDirection: 'row'}}>
+                    <Text style={styles.eventText}>
+                      {event.subcontractor}
+                    </Text>
+                    <Text style={styles.eventText}>
+                      {event.user}
+                    </Text>
+                  </View>
+                </View>
                 {event.isSubmitted && event.status === 'Approved' && (
                   <Ionicons name="checkmark-circle-outline" size={24} color="green" />
                 )}
@@ -163,6 +216,9 @@ const CalendarComponent = () => {
                   <Ionicons name="close-circle-outline" size={24} color="red" />
                 )}
               </View>
+              <TouchableOpacity style={styles.cloudIcon}>
+                <Ionicons name={'cloud-download-outline'} size={24} color={'#FFC300'} />
+              </TouchableOpacity>
             </TouchableOpacity>
           ))
         ) : (
@@ -195,14 +251,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    padding: 20,
+    marginVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     backgroundColor: '#f9f9f9',
+    borderRadius: 10,
   },
   eventText: {
     fontSize: 16,
     color: '#333',
+    marginVertical: 2.5,
   },
   calendarStyle: {
     borderBottomWidth: 1,
@@ -249,7 +308,12 @@ const styles = StyleSheet.create({
   closeIcon: {
     fontSize: 24,
       color: 'red',
-  }
+  },
+  cloudIcon: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+  },
 })
 
 export default CalendarComponent

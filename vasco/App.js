@@ -6,17 +6,18 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Provider as ReduxProvider } from 'react-redux'
 import { store } from './redux/redux'
 import { AuthProvider, useAuth } from './screens/auth/AuthContext'
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons'
 
-// Import Screens
 import Login from './screens/auth/Login'
-import CreateOrganization from "./screens/auth/CreateOrganization";
+import CreateOrganization from "./screens/auth/CreateOrganization"
 import CalendarComponent from './screens/calendar/Calendar'
-import Settings from './screens/settings/Settings';
-import DeliveryHistory from "./screens/feed/DeliveryHistory";
+import Settings from './screens/settings/Settings'
+import DeliveryHistory from "./screens/feed/DeliveryHistory"
+import PhotoBackup from "./screens/new/PhotoBackup"
+import Projects from "./screens/projects/Projects"
 
 const Stack = createStackNavigator()
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator()
 
 const BottomTabNavigator = () => {
   return (
@@ -46,7 +47,7 @@ const BottomTabNavigator = () => {
       <Tab.Screen options={{ headerShown: false }} name="Feed" component={DeliveryHistory} />
       <Tab.Screen options={{ headerShown: false }} name="Settings" component={Settings} />
     </Tab.Navigator>
-  );
+  )
 }
 
 function AppNavigator() {
@@ -55,11 +56,14 @@ function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {authToken ? (
-        <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
+        <>
+          <Stack.Screen name='MainTab' component={BottomTabNavigator} />
+          <Stack.Screen name='PhotoBackup' component={PhotoBackup} />
+        </>
       ) : (
         <>
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="CreateOrganization" component={CreateOrganization} />
+          <Stack.Screen name='Login' component={Login} />
+          <Stack.Screen name='CreateOrganization' component={CreateOrganization} />
         </>
       )}
     </Stack.Navigator>

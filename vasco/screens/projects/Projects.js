@@ -1,12 +1,13 @@
-import React from 'react'
-import { ScrollView, Text, View, StyleSheet } from 'react-native'
+import React, { useState } from 'react'
+import {ScrollView, StyleSheet, Text, View} from 'react-native'
 
-const DeliveryFeed = () => {
+const Projects = () => {
+  const [projects, setProjects] = useState({})
 
   return (
     <ScrollView style={styles.container}>
       <View>
-        <Text style={styles.title}>Delivery Feed</Text>
+        <Text style={styles.title}>Projects</Text>
       </View>
     </ScrollView>
   );
@@ -25,5 +26,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default DeliveryFeed
-
+export default Projects

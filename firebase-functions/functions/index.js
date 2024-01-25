@@ -1,48 +1,67 @@
 const functions = require("firebase-functions");
-const sgMail = require("@sendgrid/mail");
+const postmark = require("postmark");
+const fs = require("fs");
+const admin = require("firebase-admin");
+const moment = require("moment-timezone");
+admin.initializeApp();
 
-sgMail.setApiKey(functions.config().sendgrid.key);
+const client = new postmark
+    .ServerClient("bb670cea-e3bb-47e2-b3c3-4abe7290c037");
 
-exports.randomNumber = functions.https.onRequest((request, response) => {
-  const number = Math.round(Math.random() * 100);
-  response.send(number.toString());
-});
+exports.sendEmailNotification = functions
+    .https
+    .onCall((data) => {
+      const {emailList, timezone} = data;
+      if (!Array
+          .isArray(emailList) || emailList.length === 0) {
+        throw new functions
+            .https
+            .HttpsError(
+                "invalid-argument",
+                "Invalid or missing function parameters.");
+      }
 
-exports.sendEmail = functions.https.onCall((data) => {
-  const {
-    receipts,
-    images,
-    date,
-    vendor,
-    project,
-    notes,
-    email,
-    mailingList,
-    status,
-  } = data;
+      let template;
+      try {
+        template = fs.readFileSync("./email.html", "utf-8");
+      } catch (e) {
+        console.error("Template Reading Error", e);
+        throw new functions
+            .https
+            .HttpsError("internal", "Failed to read the email template.");
+      }
 
-  const msg = {
-    to: mailingList,
-    from: email,
-    templateId: "RANDOM",
-    dynamic_template_data: {
-      receipts: receipts,
-      images: images,
-      date: date,
-      vendor: vendor,
-      project: project,
-      notes: notes,
-      email: email,
-      status: status,
-    },
-  };
+      const currentDate = moment().tz(timezone || "UTC")
+          .format("dddd, MMMM Do YYYY, h:mm a");
 
-  sgMail.send(msg)
-      .then(() => {
-        console.log("Email sent successfully!");
+      const replacements = {
+        "{{Date}}": currentDate,
+        "{{Url}}": "https://vasco-6851a.web.app/dashboard",
+      };
+
+
+      // eslint-disable-next-line guard-for-in
+      for (const key in replacements) {
+        template = template.replace(key, replacements[key]);
+      }
+
+      return client.sendEmailNotification({
+        "From": "delivery@vascoapp.io",
+        "To": emailList.join(", "),
+        "Subject": "New Material Delivery!",
+        "HtmlBody": template,
+        "MessageStream": "outbound",
       })
-      .catch((error) => {
-        console.error("Error sending email via SendGrid:", error);
-        throw new functions.https.HttpsError("unknown", error.message);
-      });
-});
+          .then((r) => {
+            console.log("Email Sent", r);
+            return {success: true};
+          })
+          .catch((e) => {
+            console.error("Detailed Email Error", e);
+            throw new functions
+                .https
+                .HttpsError(
+                    "internal",
+                    `Failed to send the email. Reason: ${e.message}`);
+          });
+    });

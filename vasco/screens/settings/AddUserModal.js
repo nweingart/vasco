@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Modal, View, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { db, auth } from '../../firebase/Firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { setDoc, doc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useAuth } from '../auth/AuthContext'
 
@@ -10,7 +10,7 @@ const AddUserModal = ({ modalVisible, setModalVisible }) => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const { userDetails } = useAuth();
+  const { orgId } = useAuth();
 
   const sendResetPasswordEmail = async (email) => {
     try {
@@ -27,16 +27,18 @@ const AddUserModal = ({ modalVisible, setModalVisible }) => {
       const temporaryPassword = Math.random().toString(36).slice(-8);
 
       // Create user in Firebase Auth
-      await createUserWithEmailAndPassword(auth, newUserEmail, temporaryPassword);
+      const userCredential = await createUserWithEmailAndPassword(auth, newUserEmail, temporaryPassword);
+      const user = userCredential.user;
 
-      // Add user to Firestore with inherited orgId
-      await addDoc(collection(db, "Users"), {
+      // Add user to Firestore with inherited orgId and use the same UID
+      await setDoc(doc(db, "Users", user.uid), {
         email: newUserEmail,
         firstName,
         lastName,
-        orgId: userDetails.orgId,
+        orgId,
       });
 
+      // Send password reset email
       await sendResetPasswordEmail(newUserEmail);
 
       Alert.alert("Success", "New user added to organization successfully.");

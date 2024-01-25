@@ -1,23 +1,65 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react'
+import { Modal, View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native'
 import DatePickerAndroid from '../../utils/DatePickerAndroid'
 import DatePickerIOS from '../../utils/DatePickerIOS'
+import { useAuth } from "../auth/AuthContext"
+import { addDoc, collection } from 'firebase/firestore'
+import { db } from '../../firebase/Firebase'
 
 const CalendarModal = ({ isVisible, onClose, onSubmit }) => {
-  const [vendor, setVendor] = useState('');
-  const [material, setMaterial] = useState('');
-  const [date, setDate] = useState(new Date());
+  const [vendor, setVendor] = useState('')
+  const [project, setProject] = useState('')
+  const [material, setMaterial] = useState('')
+  const [subcontractor, setSubcontractor] = useState('')
+  const [user, setUser] = useState('')
+  const [notes, setNotes] = useState('')
+  const [date, setDate] = useState(new Date())
+  const { orgId } = useAuth()
 
   const handleDateChange = (selectedDate) => {
-    setDate(selectedDate);
+    setDate(selectedDate)
   };
 
-  const handleSubmit = () => {
-    onSubmit({ vendor, material, deliveryDate: date.toISOString().split('T')[0] });
+  const handleSubmit = async () => {
+    const newDelivery = {
+      project,
+      vendor,
+      material,
+      subcontractor,
+      user,
+      notes,
+      deliveryDate: date.toISOString().split('T')[0],
+      orgId
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, 'ScheduledDeliveries'), newDelivery);
+      onSubmit({ ...newDelivery, deliveryId: docRef.id });
+      setProject('');
+      setVendor('');
+      setMaterial('');
+      setSubcontractor('');
+      setDate(new Date());
+      setUser('');
+      setNotes('');
+      onClose();
+    } catch (error) {
+      console.error('Error adding delivery:', error);
+      // Handle error appropriately
+    }
+  };
+
+  const handleCancel = () => {
+    setProject('');
     setVendor('');
     setMaterial('');
+    setSubcontractor('');
     setDate(new Date());
-  };
+    setUser('');
+    setNotes('');
+    onClose();
+  }
+
 
   const DatePicker = Platform.OS === 'ios' ? DatePickerIOS : DatePickerAndroid;
 
@@ -33,6 +75,12 @@ const CalendarModal = ({ isVisible, onClose, onSubmit }) => {
           <Text style={styles.modalTitle}>Add New Delivery</Text>
           <TextInput
             style={styles.input}
+            onChangeText={setProject}
+            value={project}
+            placeholder="Project"
+          />
+          <TextInput
+            style={styles.input}
             onChangeText={setVendor}
             value={vendor}
             placeholder="Vendor"
@@ -41,15 +89,33 @@ const CalendarModal = ({ isVisible, onClose, onSubmit }) => {
             style={styles.input}
             onChangeText={setMaterial}
             value={material}
-            placeholder="Material Name"
+            placeholder="Material Description"
+          />
+          <TextInput
+            style={styles.input}
+            onChangeText={setSubcontractor}
+            value={subcontractor}
+            placeholder="Subcontractor"
+          />
+          <TextInput
+            style={styles.input}
+            onChangeText={setUser}
+            value={user}
+            placeholder="User"
+          />
+          <TextInput
+            style={styles.input}
+            onChangeText={setNotes}
+            value={notes}
+            placeholder="Notes"
           />
           <DatePicker
             date={date}
             onDateChange={handleDateChange}
           />
           <View style={styles.buttonContainer}>
+            <Button title="Cancel" onPress={handleCancel} color="red" />
             <Button title="Submit" onPress={handleSubmit} />
-            <Button title="Cancel" onPress={onClose} color="red" />
           </View>
         </View>
       </View>
@@ -63,9 +129,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: '100%',
   },
   modalView: {
-    width: '80%',
+    width: '100%',
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 20,
@@ -85,7 +152,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   input: {
-    width: '100%',
+    width: '90%',
     height: 40,
     marginVertical: 10,
     borderWidth: 1,
