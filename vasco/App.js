@@ -1,23 +1,33 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Provider as ReduxProvider } from 'react-redux';
+import { store } from './redux/redux';
+import { AuthProvider, useAuth } from './screens/auth/AuthContext';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Provider as ReduxProvider } from 'react-redux'
-import { store } from './redux/redux'
-import { AuthProvider, useAuth } from './screens/auth/AuthContext'
-import Ionicons from '@expo/vector-icons/Ionicons'
+import Login from './screens/auth/Login';
+import CreateOrganization from "./screens/auth/CreateOrganization";
+import CalendarComponent from './screens/calendar/Calendar';
+import Settings from './screens/settings/Settings';
+import DeliveryHistory from "./screens/feed/DeliveryHistory";
+import PhotoBackup from "./screens/new/PhotoBackup";
+import EquipmentDetail from "./screens/calendar/EquipmentDetail";
 
-import Login from './screens/auth/Login'
-import CreateOrganization from "./screens/auth/CreateOrganization"
-import CalendarComponent from './screens/calendar/Calendar'
-import Settings from './screens/settings/Settings'
-import DeliveryHistory from "./screens/feed/DeliveryHistory"
-import PhotoBackup from "./screens/new/PhotoBackup"
-import Projects from "./screens/projects/Projects"
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+const CalendarStack = createStackNavigator();
 
-const Stack = createStackNavigator()
-const Tab = createBottomTabNavigator()
+function CalendarStackNavigator() {
+  return (
+    <CalendarStack.Navigator screenOptions={{ headerShown: false }}>
+      <CalendarStack.Screen name="Calendar" component={CalendarComponent} />
+      <CalendarStack.Screen name="EquipmentDetail" component={EquipmentDetail} />
+      <CalendarStack.Screen name="PhotoBackup" component={PhotoBackup} />
+    </CalendarStack.Navigator>
+  );
+}
 
 const BottomTabNavigator = () => {
   return (
@@ -43,12 +53,12 @@ const BottomTabNavigator = () => {
         showLabel: false,
       }}
     >
-      <Tab.Screen options={{ headerShown: false }} name="Calendar" component={CalendarComponent} />
+      <Tab.Screen options={{ headerShown: false }} name="Calendar" component={CalendarStackNavigator} />
       <Tab.Screen options={{ headerShown: false }} name="Feed" component={DeliveryHistory} />
       <Tab.Screen options={{ headerShown: false }} name="Settings" component={Settings} />
     </Tab.Navigator>
-  )
-}
+  );
+};
 
 function AppNavigator() {
   const { authToken } = useAuth();
@@ -67,7 +77,7 @@ function AppNavigator() {
         </>
       )}
     </Stack.Navigator>
-  )
+  );
 }
 
 const App = () => {
@@ -80,6 +90,6 @@ const App = () => {
       </AuthProvider>
     </ReduxProvider>
   );
-}
+};
 
 export default App

@@ -16,18 +16,6 @@ const CalendarComponent = () => {
   const navigation = useNavigation();
   const { orgId } = useAuth();
 
-  console.log(orgId)
-
-  const navigateToPhotoBackup = (vendor, subcontractor, project, deliveryId) => {
-    navigation.navigate('PhotoBackup', { deliveryData: {
-        vendor,
-        subcontractor,
-        project,
-        deliveryId,
-      }});
-  };
-
-
   useEffect(() => {
     let unsubscribe = () => {};
 
@@ -180,45 +168,55 @@ const CalendarComponent = () => {
       />
       <ScrollView style={styles.eventsContainer}>
         {deliveries[selectedDay] && deliveries[selectedDay].length > 0 ? (
-          deliveries[selectedDay].map((event, index) => (
-            <TouchableOpacity
-              onPress={event.isSubmitted ? null : () => navigateToPhotoBackup(event.vendor, event.subcontractor, event.project, event.deliveryId)}
-              style={styles.eventItem}
-              key={index}
-            >
-              <View style={{ flex: 1 }}>
-                <View style={{ display: 'flex', flexDirection: 'column'}}>
-                  <Text style={styles.eventText}>
-                    Vendor: {event.vendor}
-                  </Text>
-                  <Text style={styles.eventText}>
-                    Description: {event.material}
-                  </Text>
-                  <Text style={styles.eventText}>
-                    Project: {event.project}
-                  </Text>
-                  <Text style={styles.eventText}>
-                    Notes: {event.notes}
-                  </Text>
-                  <Text style={styles.eventText}>
-                    Subcontractor: {event.subcontractor}
-                  </Text>
+          deliveries[selectedDay].map((event, index) => {
+            const isPastUnloggedEvent = moment(event.deliveryDate).isBefore(moment(), 'day') && (!event.logged || event.logged === false);
+            return (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('EquipmentDetail', { deliveryData: event })}
+                style={[
+                  styles.eventItem,
+                  event.logged ? styles.loggedEventItem : null,
+                  isPastUnloggedEvent ? styles.pastUnloggedEventItem : null
+                ]}
+                key={index}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ display: 'flex', flexDirection: 'column'}}>
                     <Text style={styles.eventText}>
-                       User: {event.user}
+                      <Text style={styles.eventPropertyText}>Vendor: </Text>
+                      {event.vendor}
                     </Text>
+                    <Text style={styles.eventText}>
+                      <Text style={styles.eventPropertyText}>Description: </Text>
+                      {event.material}
+                    </Text>
+                    <Text style={styles.eventText}>
+                      <Text style={styles.eventPropertyText}>Project: </Text>
+                      {event.project}
+                    </Text>
+                    <Text style={styles.eventText}>
+                      <Text style={styles.eventPropertyText}>Notes: </Text>
+                      {event.notes}
+                    </Text>
+                    <Text style={styles.eventText}>
+                      <Text style={styles.eventPropertyText}>Subcontractor: </Text>
+                      {event.subcontractor}
+                    </Text>
+                    <Text style={styles.eventText}>
+                      <Text style={styles.eventPropertyText}>User: </Text>
+                      {event.user}
+                    </Text>
+                  </View>
+                  {event.isSubmitted && event.status === 'Approved' && (
+                    <Ionicons name="checkmark-circle-outline" size={24} color="green" />
+                  )}
+                  {event.isSubmitted && event.status === 'Not Approved' && (
+                    <Ionicons name="close-circle-outline" size={24} color="red" />
+                  )}
                 </View>
-                {event.isSubmitted && event.status === 'Approved' && (
-                  <Ionicons name="checkmark-circle-outline" size={24} color="green" />
-                )}
-                {event.isSubmitted && event.status === 'Not Approved' && (
-                  <Ionicons name="close-circle-outline" size={24} color="red" />
-                )}
-              </View>
-              <TouchableOpacity style={styles.cloudIcon}>
-                <Ionicons name={'cloud-download-outline'} size={24} color={'#FFC300'} />
               </TouchableOpacity>
-            </TouchableOpacity>
-          ))
+            );
+          })
         ) : (
           <View style={styles.noEventItem}>
             <Text style={styles.noEventText}>No Deliveries Scheduled</Text>
@@ -255,11 +253,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
-  },
-  eventText: {
-    fontSize: 16,
-    color: '#333',
-    marginVertical: 2.5,
   },
   calendarStyle: {
     borderBottomWidth: 1,
@@ -311,6 +304,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     right: 20,
+  },
+  eventPropertyText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 3.5,
+  },
+  eventText: {
+    fontSize: 16,
+    color: '#333',
+    marginVertical: 3.5,
+  },
+  loggedEventItem: {
+    backgroundColor: '#4CAF50', // Green background for logged events
+  },
+  pastUnloggedEventItem: {
+    backgroundColor: '#FF6347', // Red background for past unlogged events
   },
 })
 

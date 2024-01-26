@@ -1,47 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { View, Alert, FlatList, Image, StyleSheet, TouchableOpacity, Text, Dimensions, BackHandler } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Alert,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Dimensions,
+  TextInput,
+  ScrollView,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
 import { uploadImageToFirebase } from "../../utils/uploadImage";
-import { setDeliveryPhotos, setPhotoDownloadUrls, setDeliveryReceipts, setReceiptsDownloadUrls } from '../../redux/redux'
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { db } from '../../firebase/Firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 const screenWidth = Dimensions.get('window').width;
-
 const isTablet = screenWidth >= 768;
 
-const PhotoBackup = () => {
+const PhotoBackup = ({ route }) => {
   const [photos, setPhotos] = useState([]);
   const [receipts, setReceipts] = useState([]);
-  const [uploading, setUploading] = useState(false);
+  const [status, setStatus] = useState('Not Approved');
+  const [notes, setNotes] = useState('');
 
-
-  const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const pickImages = async (source, type) => {
-    const permissions =
-      source === 'camera'
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const { deliveryData } = route.params
+  console.log(deliveryData)
+  const deliveryId = deliveryData.deliveryId
 
+  const pickImages = async (source, type) => {
+    const permissions = source === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissions.granted) {
       alert('Permission required!');
       return;
     }
-
-    let result =
-      source === 'camera'
-        ? await ImagePicker.launchCameraAsync()
-        : await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsMultipleSelection: true,
-        });
-
+    let result = source === 'camera' ? await ImagePicker.launchCameraAsync() : await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+    });
     if (!result.cancelled && result.assets && result.assets.length > 0) {
       const uris = result.assets.map(asset => asset.uri);
-
       if (type === 'photo') {
         setPhotos(prevPhotos => [...prevPhotos, ...uris]);
       } else if (type === 'receipt') {
@@ -50,16 +53,33 @@ const PhotoBackup = () => {
     }
   }
 
-  useEffect(() => {
-    const backAction = () => {
-      handleBack()
-      return true
-    };
-
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
-
-    return () => backHandler.remove();
-  }, [photos, receipts]);
+  const updateScheduledDelivery = async (deliveryId, photoUrls, receiptUrls, status, notes) => {
+    console.log(deliveryId)
+    console.log(photoUrls)
+    console.log(receiptUrls)
+    console.log(status)
+    console.log(notes)
+    const deliveryRef = doc(db, 'ScheduledDeliveries', deliveryId);
+    const actualReceivedDate = new Date();
+    console.log('Updating delivery with ID:', deliveryId);
+    console.log('Photo URLs:', photoUrls);
+    console.log('Receipt URLs:', receiptUrls);
+    console.log('Status:', status);
+    console.log('Notes:', notes);
+    try {
+      await updateDoc(deliveryRef, {
+        actualReceivedDate: actualReceivedDate,
+        logged: true,
+        status: status,
+        arrivalNotes: notes,
+        photos: photoUrls,
+        receipts: receiptUrls,
+      });
+      console.log('Delivery updated successfully');
+    } catch (error) {
+      console.error('Error updating delivery:', error);
+    }
+  }
 
   const showImageOptions = (type) => {
     Alert.alert(
@@ -73,6 +93,18 @@ const PhotoBackup = () => {
     );
   }
 
+  const setApprovedOpacity = () => {
+    return status === 'Approved' ? 1 : 0.5;
+  }
+
+  const setNotApprovedOpacity = () => {
+    return status === 'Not Approved' ? 1 : 0.5;
+  }
+
+  const handleStatus = () => {
+    setStatus(status === 'Not Approved' ? 'Approved' : 'Not Approved');
+  }
+
   const renderImageItem = ({ item, index, type }) => {
     if (item === 'add') {
       return (
@@ -84,11 +116,10 @@ const PhotoBackup = () => {
         </TouchableOpacity>
       );
     }
-
     const handleRemoveImage = () => {
       if (type === 'photo') {
         const updatedPhotos = [...photos];
-        updatedPhotos.splice(index - 1, 1); // subtracting 1 because of the 'add' at the start
+        updatedPhotos.splice(index - 1, 1);
         setPhotos(updatedPhotos);
       } else if (type === 'receipt') {
         const updatedReceipts = [...receipts];
@@ -96,7 +127,6 @@ const PhotoBackup = () => {
         setReceipts(updatedReceipts);
       }
     };
-
     return (
       <View style={styles.imageContainer}>
         <Image source={{ uri: item }} style={styles.image} />
@@ -107,79 +137,117 @@ const PhotoBackup = () => {
     );
   };
 
-  const submitImages = async (imageArray, setFunction) => {
-    setUploading(true);
-
+  const submitImages = async (imageArray) => {
     const uploadPromises = imageArray.map(uploadImageToFirebase);
-    const downloadUrls = await Promise.all(uploadPromises);
-
-
-    if(setFunction === setPhotos) {
-      dispatch(setDeliveryPhotos(imageArray));
-      dispatch(setPhotoDownloadUrls(downloadUrls));
-    } else {
-      dispatch(setDeliveryReceipts(imageArray));
-      dispatch(setReceiptsDownloadUrls(downloadUrls));
+    try {
+      const downloadUrls = await Promise.all(uploadPromises);
+      console.log(downloadUrls)
+      return downloadUrls;
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      throw error;
     }
-  }
+  };
 
   const handleBack = () => {
-    navigation.goBack()
+    navigation.goBack();
   }
 
-  /*
-  const handleNext = () => {
-    navigation.navigate("NewDelivery")
-    submitImages(photos, setPhotos)
-      .then(() => {
-        return submitImages(receipts, setReceipts);
-      })
-      .then(() => {
-        console.log('Photos and Receipts uploaded successfully');
-      })
-      .catch(error => {
-        console.error('There was an error uploading the images:', error);
-      });
+  const handleNext = async (deliveryId) => {
+    Alert.alert(
+      "Confirm Submission",
+      "Are you sure you want to submit the updated delivery?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Submission cancelled"),
+          style: "cancel"
+        },
+        {
+          text: "Submit",
+          onPress: async () => {
+            try {
+              const photoUrls = await submitImages(photos);
+              const receiptUrls = await submitImages(receipts);
+              await updateScheduledDelivery(deliveryId, photoUrls, receiptUrls, status, notes);
+              console.log('Scheduled Delivery updated successfully')
+              navigation.navigate("Calendar");
+            } catch (error) {
+              console.error('There was an error:', error);
+            }
+          }
+        }
+      ]
+    );
   };
-   */
 
+  const handleNotesChange = value => {
+    setNotes(value);
+  };
 
   return (
-        <View style={styles.container}>
-          <View style={styles.backButton}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-              <Ionicons name='arrow-back-outline' size={45} color={'black'} />
-            </TouchableOpacity>
-          </View>
-          <Text style={{ ...styles.title, fontSize: isTablet ? 36 : 24  }}>Add Photo Backup</Text>
-          <View style={styles.section}>
-            <View style={styles.section}>
-              <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Receipts</Text>
-              <FlatList
-                horizontal
-                data={['add', ...receipts]}
-                renderItem={(props) => renderImageItem({ ...props, type: 'receipt' })}
-                keyExtractor={(item, index) => index.toString()}
-              />
-            </View>
-            <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Photos of Material</Text>
-            <FlatList
-              horizontal
-              data={['add', ...photos ]}
-              renderItem={(props) => renderImageItem({ ...props, type: 'photo' })}
-              keyExtractor={(item, index) => index.toString()}
-            />
-          </View>
+    <ScrollView>
+      <View style={styles.container}>
+        <Text style={{ ...styles.title, fontSize: isTablet ? 36 : 24 }}>Add Photo Backup</Text>
+        <View style={styles.section}>
+          <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Receipts</Text>
+          <FlatList
+            horizontal
+            data={['add', ...receipts]}
+            renderItem={(props) => renderImageItem({ ...props, type: 'receipt' })}
+            keyExtractor={(item, index) => index.toString()}
+          />
+        </View>
+        <View style={styles.section}>
+          <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Photos of Material</Text>
+          <FlatList
+            horizontal
+            data={['add', ...photos]}
+            renderItem={(props) => renderImageItem({ ...props, type: 'photo' })}
+            keyExtractor={(item, index) => index.toString()}
+          />
+        </View>
+        <View style={styles.actionContainer}>
+          <TouchableOpacity
+            style={{...styles.button, backgroundColor: '#40D35D', opacity: setApprovedOpacity(), marginRight: 20}}
+            onPress={handleStatus}>
+            <Text style={styles.buttonText}>Approved</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{...styles.button, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity(), marginLeft: 20}}
+            onPress={handleStatus}>
+            <Text style={styles.buttonText}>Not Approved</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.notesLabel}>Notes</Text>
+        <TextInput
+          style={styles.textBox}
+          value={notes}
+          placeholder={'Give brief description of delivery items'}
+          onChangeText={handleNotesChange}
+          autoCapitalize="sentences"
+        />
       </View>
-  )
-}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={handleBack}>
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={() => handleNext(deliveryId)}>
+        <Ionicons name="arrow-forward" size={24} color="black" />
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 50,
     alignItems: 'center',
-    backgroundColor: '#f0f0f0', // Light gray background
+    backgroundColor: '#f0f0f0',
   },
   loadingContainer: {
     flex: 1,
@@ -192,10 +260,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   backButton: {
-    zIndex: 5,
     position: 'absolute',
-    top: '12%',
-    left: '10%'
+    left: 20,
+    bottom: 50,
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 50,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   title: {
     fontWeight: 'bold',
@@ -244,6 +317,58 @@ const styles = StyleSheet.create({
     fontSize: 60,
     color: 'green',
   },
-});
+  button: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFC300',
+    padding: isTablet ? 10 : 15,
+    borderRadius: 10,
+    height: isTablet ? 70 : 65,
+    width: isTablet ? 200 : 150,
+    marginHorizontal: isTablet ? 20 : 0,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginVertical: 15,
+  },
+  textBox: {
+    width: '100%',
+    height: isTablet ? 100 : 50,
+    padding: 10,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  notesContainer: {
+    width: '100%',
+    alignItems: 'flex-start',
+    marginVertical: 15,
+  },
+  notesLabel: {
+    alignSelf: 'flex-start',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  submitButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 50,
+    padding: 10,
+    backgroundColor: '#4CAF50',
+    borderRadius: 50,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+})
 
 export default PhotoBackup
