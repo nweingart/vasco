@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import {View, StyleSheet, Alert, TouchableOpacity, Text} from 'react-native'
 import { useAuth } from '../auth/AuthContext'
 import AddUserModal from "./AddUserModal";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 
 const Settings = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -47,7 +49,7 @@ const Settings = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Settings</Text>
+        <Text style={styles.headerText}>Account</Text>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={signOut}>
@@ -61,6 +63,11 @@ const Settings = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <AddUserModal modalVisible={modalVisible} setModalVisible={setModalVisible} />
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -99,6 +106,17 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    bottom: 50,
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 50,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
 });
 

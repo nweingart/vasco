@@ -8,8 +8,10 @@ import { db } from '../../firebase/Firebase';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment-timezone';
 import { useAuth } from "../auth/AuthContext";
+import ListView from "./ListView";
 
 const CalendarComponent = () => {
+  const [viewMode, setViewMode] = useState('calendar');
   const [selectedDay, setSelectedDay] = useState(getCurrentDate());
   const [markedDates, setMarkedDates] = useState(getMarkedDates());
   const [deliveries, setDeliveries] = useState({});
@@ -123,49 +125,40 @@ const CalendarComponent = () => {
     setModalVisible(false);
   };
 
-  /*const handleModalSubmit = (newDelivery) => {
-    console.log("Before update:", deliveries);
-
-    setDeliveries(prevDeliveries => {
-      const estDate = moment(newDelivery.deliveryDate).tz('America/New_York').format('YYYY-MM-DD');
-      const updatedDeliveries = { ...prevDeliveries };
-
-      if (updatedDeliveries[estDate]) {
-        updatedDeliveries[estDate] = [...updatedDeliveries[estDate], newDelivery];
-      } else {
-        updatedDeliveries[estDate] = [newDelivery];
-      }
-
-      console.log("After update:", updatedDeliveries);
-      return updatedDeliveries;
-    });
-
-    updateMarkedDates(newDelivery.deliveryDate);
-    setModalVisible(false);
-  };
-
-   */
-
-
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Delivery Calendar</Text>
+      <View style={styles.headerContainer}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={styles.title}>{viewMode === 'calendar' ? 'Delivery Calendar' : 'Delivery List'}</Text>
+          <TouchableOpacity onPress={() => setViewMode(viewMode === 'calendar' ? 'list' : 'calendar')} style={styles.toggleButton}>
+            <Text style={{ fontWeight: 'bold'}}>{viewMode === 'calendar' ? 'List View' : 'Calendar View'}</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+          <Ionicons name="person-circle-outline" size={34} color="black" />
+        </TouchableOpacity>
+      </View>
       <CalendarModal
         isVisible={isModalVisible}
         onClose={handleModalClose}
         onSubmit={handleModalSubmit}
       />
-      <Calendar
-        current={getCurrentDate()}
-        onDayPress={onDayPress}
-        monthFormat={'MMMM yyyy'}
-        hideExtraDays={true}
-        markingType={'multi-dot'}
-        markedDates={markedDates}
-        style={styles.calendarStyle}
-        theme={styles.calendarTheme}
-      />
+      {
+        viewMode === 'calendar' ? (
+          <Calendar
+          current={getCurrentDate()}
+          onDayPress={onDayPress}
+          monthFormat={'MMMM yyyy'}
+          hideExtraDays={true}
+          markingType={'multi-dot'}
+          markedDates={markedDates}
+          style={styles.calendarStyle}
+          theme={styles.calendarTheme}
+        />) : (
+          <ListView deliveries={deliveries} />
+        )
+      }
+
       <ScrollView style={styles.eventsContainer}>
         {deliveries[selectedDay] && deliveries[selectedDay].length > 0 ? (
           deliveries[selectedDay].map((event, index) => {
@@ -237,11 +230,22 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  profileIcon: {
+    // No explicit background color, using default icon color and size
+    color: 'black', // Example white color for the icon, // Matching background color to toggle for consistency
+    borderRadius: 15, // Half of your icon size to make it circle
+    padding: 5,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 100,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 100,
-    marginBottom: 40,
   },
   eventItem: {
     flexDirection: 'row',
@@ -321,6 +325,13 @@ const styles = StyleSheet.create({
   },
   pastUnloggedEventItem: {
     backgroundColor: '#FF6347', // Red background for past unlogged events
+  },
+  toggleButton: {
+    backgroundColor: '#FFC300',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    marginLeft: 10,
   },
 })
 

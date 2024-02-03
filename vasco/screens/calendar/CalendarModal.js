@@ -1,141 +1,135 @@
-import React, { useState } from 'react'
-import { Modal, View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native'
-import DatePickerAndroid from '../../utils/DatePickerAndroid'
-import DatePickerIOS from '../../utils/DatePickerIOS'
-import { useAuth } from "../auth/AuthContext"
-import { addDoc, collection } from 'firebase/firestore'
-import { db } from '../../firebase/Firebase'
+import React, { useEffect, useState } from 'react';
+import { Alert, Modal, View, Text, StyleSheet, Button, TextInput } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
+import {useAuth} from "../auth/AuthContext";
+import { collection, onSnapshot, query, where, addDoc} from 'firebase/firestore'
+import { db } from '../../firebase/Firebase';
 
 const CalendarModal = ({ isVisible, onClose, onSubmit }) => {
-  const [vendor, setVendor] = useState('')
-  const [project, setProject] = useState('')
-  const [material, setMaterial] = useState('')
-  const [subcontractor, setSubcontractor] = useState('')
-  const [user, setUser] = useState('')
-  const [notes, setNotes] = useState('')
-  const [date, setDate] = useState(new Date())
-  const { orgId } = useAuth()
+  const { orgId } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([]);
+  const [isAddNewModalVisible, setIsAddNewModalVisible] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
 
-  const handleDateChange = (selectedDate) => {
-    setDate(selectedDate)
-  };
+  useEffect(() => {
+    if (!orgId) return;
 
-  const handleSubmit = async () => {
-    const newDelivery = {
-      project,
-      vendor,
-      material,
-      subcontractor,
-      user,
-      notes,
-      deliveryDate: date.toISOString().split('T')[0],
-      orgId
-    };
+    const q = query(collection(db, "Projects"), where("orgId", "==", orgId));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const projects = querySnapshot.docs.map(doc => ({
+        label: doc.data().description,
+        value: doc.id
+      }));
 
-    try {
-      const docRef = await addDoc(collection(db, 'ScheduledDeliveries'), newDelivery);
-      onSubmit({ ...newDelivery, deliveryId: docRef.id });
-      setProject('');
-      setVendor('');
-      setMaterial('');
-      setSubcontractor('');
-      setDate(new Date());
-      setUser('');
-      setNotes('');
-      onClose();
-    } catch (error) {
-      console.error('Error adding delivery:', error);
-      // Handle error appropriately
+      // Always include the "Add New" option and sort the rest alphabetically
+      const sortedProjects = [
+        { label: 'Add New+', value: 'add_new' },
+        ...projects.sort((a, b) => a.label.localeCompare(b.label))
+      ];
+
+      setItems(sortedProjects);
+    });
+
+    return () => unsubscribe();
+  }, [orgId]);
+
+  const handleValueChange = (itemValue) => {
+    if (itemValue === 'add_new') {
+      // Show the "Add New" modal
+      setOpen(false);
+      setIsAddNewModalVisible(true);
+    } else {
+      setValue(itemValue);
     }
   };
 
-  const handleCancel = () => {
-    setProject('');
-    setVendor('');
-    setMaterial('');
-    setSubcontractor('');
-    setDate(new Date());
-    setUser('');
-    setNotes('');
-    onClose();
-  }
+  const handleAddNewItem = async () => {
+    if (newProjectName.trim()) {
+      // Add the new project to Firebase
+      try {
+        await addDoc(collection(db, 'Projects'), {
+          orgId: orgId,
+          description: newProjectName // Modify this as per your data structure
+        });
 
+        setNewProjectName('');
+        setIsAddNewModalVisible(false);
+        setValue(null); // Reset the selected value to null
+      } catch (error) {
+        console.error('Error adding document: ', error);
+        // Handle the error appropriately (e.g., show an error message to the user)
+      }
+    }
+  };
 
-  const DatePicker = Platform.OS === 'ios' ? DatePickerIOS : DatePickerAndroid;
+  const handleCancelNewItem = () => {
+    setNewProjectName(''); // Clear any entered but not submitted text
+    setIsAddNewModalVisible(false); // Close the modal
+    setValue(null); // Reset the selected value to avoid reopening the modal for 'add_new'
+    setOpen(false); // Optionally ensure the dropdown is closed
+  };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
+    <Modal animationType="slide" transparent={true} visible={isVisible} onRequestClose={onClose}>
+      <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text style={styles.modalTitle}>Add New Delivery</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={setProject}
-            value={project}
-            placeholder="Project"
-          />
-          <TextInput
-            style={styles.input}
-            onChangeText={setVendor}
-            value={vendor}
-            placeholder="Vendor"
-          />
-          <TextInput
-            style={styles.input}
-            onChangeText={setMaterial}
-            value={material}
-            placeholder="Material Description"
-          />
-          <TextInput
-            style={styles.input}
-            onChangeText={setSubcontractor}
-            value={subcontractor}
-            placeholder="Subcontractor"
-          />
-          <TextInput
-            style={styles.input}
-            onChangeText={setUser}
-            value={user}
-            placeholder="User"
-          />
-          <TextInput
-            style={styles.input}
-            onChangeText={setNotes}
-            value={notes}
-            placeholder="Notes"
-          />
-          <DatePicker
-            date={date}
-            onDateChange={handleDateChange}
+          <Text style={styles.modalText}>Choose a Project</Text>
+          <DropDownPicker
+            open={open}
+            value={value}
+            items={[...items]}
+            setOpen={setOpen}
+            setValue={setValue}
+            onChangeValue={handleValueChange}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
           />
           <View style={styles.buttonContainer}>
-            <Button title="Cancel" onPress={handleCancel} color="red" />
-            <Button title="Submit" onPress={handleSubmit} />
+            <Button title="Cancel" onPress={onClose} color="red" />
+            <Button title="Submit" onPress={() => onSubmit(value)} />
           </View>
         </View>
       </View>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isAddNewModalVisible}
+        onRequestClose={handleCancelNewItem}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <TextInput
+              style={styles.input}
+              placeholder="New project name"
+              value={newProjectName}
+              onChangeText={setNewProjectName}
+              autoFocus={true}
+            />
+            <View style={styles.buttonContainer}>
+              <Button title="Cancel" onPress={handleCancelNewItem} color="#999" />
+              <Button title="Add" onPress={handleAddNewItem} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   modalView: {
-    width: '100%',
+    margin: 20,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 20,
+    padding: 35,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -145,27 +139,33 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    width: '80%',
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  modalText: {
     marginBottom: 15,
+    textAlign: 'center',
+  },
+  dropdown: {
+    minWidth: '100%',
+    height: 40,
+  },
+  dropdownContainer: {
+    minWidth: '100%',
+    zIndex: 1000,
   },
   input: {
-    width: '90%',
+    width: '100%',
     height: 40,
-    marginVertical: 10,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#ddd',
     padding: 10,
-    borderRadius: 5,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     width: '100%',
-    marginTop: 20,
   },
 });
 
-export default CalendarModal
+export default CalendarModal;
+

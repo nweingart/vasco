@@ -14,6 +14,7 @@ import Settings from './screens/settings/Settings';
 import DeliveryHistory from "./screens/feed/DeliveryHistory";
 import PhotoBackup from "./screens/new/PhotoBackup";
 import EquipmentDetail from "./screens/calendar/EquipmentDetail";
+import ComingSoonScreen from "./screens/settings/ComingSoon";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,8 +26,15 @@ function CalendarStackNavigator() {
       <CalendarStack.Screen name="Calendar" component={CalendarComponent} />
       <CalendarStack.Screen name="EquipmentDetail" component={EquipmentDetail} />
       <CalendarStack.Screen name="PhotoBackup" component={PhotoBackup} />
+      <CalendarStack.Screen name="Settings" component={Settings} />
     </CalendarStack.Navigator>
   );
+}
+
+function createComingSoonScreen(name) {
+  return function ComingSoonWrapper(props) {
+    return <ComingSoonScreen {...props} route={{ ...props.route, params: { name } }} />;
+  };
 }
 
 const BottomTabNavigator = () => {
@@ -36,26 +44,29 @@ const BottomTabNavigator = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
+          // Icon names based on the route
           if (route.name === 'Calendar') {
             iconName = focused ? 'calendar' : 'calendar-outline';
-          } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
           } else if (route.name === 'Feed') {
             iconName = focused ? 'list' : 'list-outline';
+          } else if (route.name === 'Analytics') {
+            iconName = focused ? 'analytics' : 'analytics-outline';
+          } else if (route.name === 'Projects') {
+            iconName = focused ? 'home' : 'home-outline';
           }
 
+          // Return the Ionicons component
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#FFC300',
         tabBarInactiveTintColor: 'gray',
+        tabBarShowLabel: false, // You can use tabBarOptions for other options but tabBarShowLabel goes here for RN v5+
       })}
-      tabBarOptions={{
-        showLabel: false,
-      }}
     >
-      <Tab.Screen options={{ headerShown: false }} name="Calendar" component={CalendarStackNavigator} />
-      <Tab.Screen options={{ headerShown: false }} name="Feed" component={DeliveryHistory} />
-      <Tab.Screen options={{ headerShown: false }} name="Settings" component={Settings} />
+      <Tab.Screen name="Calendar" component={CalendarStackNavigator} options={{ headerShown: false }} />
+      <Tab.Screen name="Feed" component={createComingSoonScreen('Delivery Feed')} options={{ headerShown: false }} />
+      <Tab.Screen name="Analytics" component={createComingSoonScreen('Analytics')} options={{ headerShown: false }} />
+      <Tab.Screen name="Projects" component={createComingSoonScreen('Projects')} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 };
@@ -69,6 +80,7 @@ function AppNavigator() {
         <>
           <Stack.Screen name='MainTab' component={BottomTabNavigator} />
           <Stack.Screen name='PhotoBackup' component={PhotoBackup} />
+          <Stack.Screen name="Settings" component={Settings} />
         </>
       ) : (
         <>
