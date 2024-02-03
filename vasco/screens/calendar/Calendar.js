@@ -121,10 +121,6 @@ const CalendarComponent = () => {
     setModalVisible(false);
   };
 
-  const handleModalSubmit = (newDelivery) => {
-    setModalVisible(false);
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -141,7 +137,6 @@ const CalendarComponent = () => {
       <CalendarModal
         isVisible={isModalVisible}
         onClose={handleModalClose}
-        onSubmit={handleModalSubmit}
       />
       {
         viewMode === 'calendar' ? (
