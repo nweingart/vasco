@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { Alert, View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import moment from 'moment-timezone';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/Firebase';
 
 const EquipmentDetail = ({ route }) => {
@@ -32,6 +32,21 @@ const EquipmentDetail = ({ route }) => {
   const handleReceiveMaterials = () => {
     navigation.navigate('PhotoBackup', { deliveryData });
   };
+
+  const handleDeleteDelivery = (deliveryId) => {
+    console.log(deliveryId)
+    Alert.alert("Confirm Delete", "Are you sure you want to delete this delivery?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "OK", onPress: () => deleteDelivery(deliveryId) }
+    ]);
+  };
+
+  const deleteDelivery = async (deliveryId) => {
+    await deleteDoc(doc(db, "ScheduledDeliveries", deliveryId));
+    navigation.goBack();
+  };
+
+
 
   return (
     <>
@@ -87,13 +102,18 @@ const EquipmentDetail = ({ route }) => {
           {
           !fullDeliveryData?.receipts ?
             <>
-              <TouchableOpacity style={{...styles.buttonStyle, backgroundColor: '#FFC300',}} onPress={() => console.log('Edit button pressed')}>
-                <Text style={styles.buttonText}>Edit Materials</Text>
+              <TouchableOpacity style={{...styles.buttonStyle, backgroundColor: 'red'}}  onPress={() => handleDeleteDelivery(deliveryData.deliveryId)}>
+                <Text style={styles.buttonText}>Delete Materials</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{...styles.buttonStyle, backgroundColor: '#40D25C'}}  onPress={handleReceiveMaterials}>
                 <Text style={styles.buttonText}>Receive Materials</Text>
               </TouchableOpacity>
-            </> : null
+            </> :
+            <>
+              <TouchableOpacity style={{...styles.buttonStyle, backgroundColor: 'red'}}  onPress={handleDeleteDelivery}>
+                <Text style={styles.buttonText}>Delete Materials</Text>
+              </TouchableOpacity>
+            </>
         }
         </View>
       </ScrollView>

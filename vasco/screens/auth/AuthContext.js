@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -10,28 +11,46 @@ export const AuthProvider = ({ children }) => {
   const [authToken, setAuthToken] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [orgId, setOrgId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const saveUserDetailsAndOrgIdToStorage = async (details, orgIdValue) => {
+    try {
+      await AsyncStorage.setItem('userDetails', JSON.stringify(details));
+      await AsyncStorage.setItem('orgId', JSON.stringify(orgIdValue));
+    } catch (error) {
+      console.error('Failed to save userDetails or orgId to AsyncStorage:', error);
+    }
+  };
 
   useEffect(() => {
-    const loadAuthToken = async () => {
-      const token = await AsyncStorage.getItem('authToken');
-      if (token) {
-        setAuthToken(token);
+    const rehydrateAndAuthenticate = async () => {
+      setIsLoading(true);
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        if (token) {
+          setAuthToken(token);
+          const userDetailsString = await AsyncStorage.getItem('userDetails');
+          const orgIdString = await AsyncStorage.getItem('orgId');
+          if (userDetailsString) setUserDetails(JSON.parse(userDetailsString));
+          if (orgIdString) setOrgId(JSON.parse(orgIdString));
+
+          // Only attempt to fetch user details if there's a current user in Firebase Auth
+          const user = auth.currentUser;
+          if (user) {
+            fetchUserDetails(user.uid);
+          } else {
+            setIsLoading(false);
+          }
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error rehydrating auth state:', error);
+        setIsLoading(false);
       }
     };
 
-    loadAuthToken();
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        fetchUserDetails(user.uid);
-      } else {
-        setAuthToken(null);
-        setUserDetails(null);
-        setOrgId(null);
-      }
-    });
-
-    return () => unsubscribe();
+    rehydrateAndAuthenticate();
   }, []);
 
   const fetchUserDetails = async (userId) => {
@@ -42,9 +61,12 @@ export const AuthProvider = ({ children }) => {
         const userData = userDoc.data();
         setUserDetails(userData);
         setOrgId(userData.orgId);
+        await saveUserDetailsAndOrgIdToStorage(userData, userData.orgId);
       }
     } catch (error) {
       console.error('Failed to fetch user details:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -54,6 +76,7 @@ export const AuthProvider = ({ children }) => {
       const token = await response.user.getIdToken();
       await AsyncStorage.setItem('authToken', token);
       setAuthToken(token);
+      // Ensure userDetails and orgId are fetched and saved within fetchUserDetails
       fetchUserDetails(response.user.uid);
     } catch (error) {
       console.error('Login failed:', error);
@@ -86,8 +109,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ authToken, userDetails, orgId, login, logout, handleAccountDeletion }}>
-      {children}
+    <AuthContext.Provider value={{ authToken, userDetails, orgId, login, logout, handleAccountDeletion, isLoading }}>
+      {isLoading ? <View><Text>Loading...</Text></View> : children}
     </AuthContext.Provider>
   );
 };
@@ -100,4 +123,4 @@ export const useAuth = () => {
   return context;
 };
 
-export default AuthContext
+export default AuthContext;

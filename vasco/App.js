@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as ReduxProvider } from 'react-redux';
 import { store } from './redux/redux';
-import { AuthProvider, useAuth } from './screens/auth/AuthContext';
+import { AuthProvider, useAuth} from './screens/auth/AuthContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Login from './screens/auth/Login';
 import CreateOrganization from "./screens/auth/CreateOrganization";
 import CalendarComponent from './screens/calendar/Calendar';
 import Settings from './screens/settings/Settings';
-import DeliveryHistory from "./screens/feed/DeliveryHistory";
+import ListView from "./screens/calendar/ListView";
 import PhotoBackup from "./screens/new/PhotoBackup";
 import EquipmentDetail from "./screens/calendar/EquipmentDetail";
 import ComingSoonScreen from "./screens/settings/ComingSoon";
@@ -64,7 +66,7 @@ const BottomTabNavigator = () => {
       })}
     >
       <Tab.Screen name="Calendar" component={CalendarStackNavigator} options={{ headerShown: false }} />
-      <Tab.Screen name="Feed" component={createComingSoonScreen('Delivery Feed')} options={{ headerShown: false }} />
+      <Tab.Screen name="Feed" component={ListView} options={{ headerShown: false }} />
       <Tab.Screen name="Analytics" component={createComingSoonScreen('Analytics')} options={{ headerShown: false }} />
       <Tab.Screen name="Projects" component={createComingSoonScreen('Projects')} options={{ headerShown: false }} />
     </Tab.Navigator>
@@ -72,11 +74,17 @@ const BottomTabNavigator = () => {
 };
 
 function AppNavigator() {
-  const { authToken } = useAuth();
+  const { authToken, orgId, userDetails, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <View><Text>LOADING!</Text></View>; // Implement a LoadingScreen component or use any placeholder
+  }
+
+
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {authToken ? (
+      {authToken && orgId && userDetails ? (
         <>
           <Stack.Screen name='MainTab' component={BottomTabNavigator} />
           <Stack.Screen name='PhotoBackup' component={PhotoBackup} />

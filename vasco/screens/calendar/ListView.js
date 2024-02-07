@@ -1,39 +1,92 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "../../firebase/Firebase";
+import { useAuth } from "../auth/AuthContext";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-const DeliveryListView = ({ deliveries }) => {
+const ListView = () => {
+  const { orgId } = useAuth();
+  const [deliveries, setDeliveries] = useState({});
   const navigation = useNavigation();
 
-  // Split and sort deliveries into upcoming and past
-  const upcomingDeliveries = [];
-  const pastDeliveries = [];
-  Object.keys(deliveries).forEach(date => {
-    deliveries[date].forEach(delivery => {
-      if (moment(delivery.deliveryDate).isBefore(moment(), 'day')) {
-        pastDeliveries.push(delivery);
-      } else {
-        upcomingDeliveries.push(delivery);
-      }
+  useEffect(() => {
+    let unsubscribe = () => {};
+
+    if (orgId) {
+      const queryRef = query(collection(db, 'ScheduledDeliveries'), where('orgId', '==', orgId));
+
+      unsubscribe = onSnapshot(queryRef, (querySnapshot) => {
+        let newDeliveries = {};
+
+        querySnapshot.forEach((doc) => {
+          const data = { ...doc.data(), deliveryId: doc.id, status: doc.data().status, isSubmitted: false };
+          const estDate = moment(data.deliveryDate).tz('America/New_York').format('YYYY-MM-DD');
+          if (!newDeliveries[estDate]) {
+            newDeliveries[estDate] = [];
+          }
+          newDeliveries[estDate].push(data);
+        });
+
+        setDeliveries(newDeliveries);
+      }, (error) => {
+        console.error('Error fetching deliveries:', error);
+      });
+    }
+
+    return () => unsubscribe();
+  }, [orgId]);
+
+  const organizeDeliveries = () => {
+    const pendingDeliveries = [];
+    const upcomingDeliveries = [];
+    const pastDeliveries = [];
+
+    Object.keys(deliveries).forEach(date => {
+      deliveries[date].forEach(delivery => {
+        // Mark as pending only if status is explicitly 'pending'
+        if (delivery.status === 'pending') {
+          pendingDeliveries.push(delivery);
+        } else {
+          // Categorize as past or upcoming based on delivery date
+          const deliveryDate = moment(delivery.deliveryDate);
+          if (deliveryDate.isBefore(moment(), 'day')) {
+            // Delivery date is in the past
+            pastDeliveries.push(delivery);
+          } else {
+            // Delivery date is today or in the future
+            upcomingDeliveries.push(delivery);
+          }
+        }
+      });
     });
-  });
 
-  // Sort each array accordingly
-  upcomingDeliveries.sort((a, b) => moment(a.deliveryDate).diff(moment(b.deliveryDate)));
-  pastDeliveries.sort((a, b) => moment(b.deliveryDate).diff(moment(a.deliveryDate)));
+    // Sort upcoming and past deliveries by date
+    upcomingDeliveries.sort((a, b) => moment(a.deliveryDate).diff(moment(b.deliveryDate)));
+    pastDeliveries.sort((a, b) => moment(a.deliveryDate).diff(moment(b.deliveryDate)));
 
-  // Merge arrays with headers
+    return { pendingDeliveries, upcomingDeliveries, pastDeliveries };
+  };
+
+
+  const { pendingDeliveries, upcomingDeliveries, pastDeliveries } = organizeDeliveries();
+
   const dataWithHeaders = [
     { type: 'header', title: 'Upcoming Deliveries' },
-    ...upcomingDeliveries,
+    ...upcomingDeliveries.length > 0 ? upcomingDeliveries : [{ type: 'message', title: 'No Upcoming Deliveries' }],
+    { type: 'header', title: 'Pending Deliveries' },
+    ...pendingDeliveries.length > 0 ? pendingDeliveries : [{ type: 'message', title: 'No Pending Deliveries' }],
     { type: 'header', title: 'Past Deliveries' },
-    ...pastDeliveries,
-  ].filter(item => item.title !== 'Past Deliveries' || pastDeliveries.length > 0); // Only show past deliveries header if there are past deliveries
+    ...pastDeliveries.length > 0 ? pastDeliveries : [{ type: 'message', title: 'No Past Deliveries' }],
+  ];
 
   const renderItem = ({ item }) => {
     if (item.type === 'header') {
       return <Text style={styles.header}>{item.title}</Text>;
+    } else if (item.type === 'message') {
+      return <View style={styles.messageCard}><Text style={styles.messageText}>{item.title}</Text></View>;
     }
 
     return (
@@ -48,26 +101,46 @@ const DeliveryListView = ({ deliveries }) => {
         <View style={styles.textContainer}>
           <Text style={styles.text}><Text style={styles.propertyName}>Vendor:</Text> {item.vendor}</Text>
           <Text style={styles.text}><Text style={styles.propertyName}>Material:</Text> {item.material}</Text>
-          <Text style={styles.text}><Text style={styles.propertyName}>Delivery Date:</Text> {item.deliveryDate}</Text>
-          <Text style={styles.text}><Text style={styles.propertyName}>Status:</Text> {item.isSubmitted ? 'Submitted' : 'Not Submitted'}</Text>
+          <Text style={styles.text}><Text style={styles.propertyName}>Delivery Date:</Text> {moment(item.deliveryDate).format('YYYY-MM-DD')}</Text>
+          <Text style={styles.text}><Text style={styles.propertyName}>Status:</Text> {item.status}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
   return (
-    <FlatList
-      data={dataWithHeaders}
-      keyExtractor={(item, index) => item.deliveryId || `header-${index}`}
-      renderItem={renderItem}
-      contentContainerStyle={styles.container}
-    />
+    <View>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Delivery List</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+          <Ionicons style={styles.profileIcon} name="person-circle-outline" size={34} color="black" />
+        </TouchableOpacity>
+      </View>
+      <FlatList
+        data={dataWithHeaders}
+        keyExtractor={(item, index) => item.deliveryId || `header-${index}`}
+        renderItem={renderItem}
+        contentContainerStyle={styles.container}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    flexGrow: 1,
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    paddingHorizontal: 20,
+  },
+  profileIcon: {
+    // No explicit background color, using default icon color and size
+    color: 'black', // Example white color for the icon, // Matching background color to toggle for consistency
+    borderRadius: 15,
+    paddingHorizontal: 20,
   },
   listItem: {
     flexDirection: 'row',
@@ -77,12 +150,31 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: '#ddd',
+    backgroundColor: '#f9f9f9',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 100,
+    marginBottom: 20,
   },
   header: {
     fontSize: 18,
     fontWeight: 'bold',
-    paddingTop: 20,
-    paddingBottom: 10,
+    marginVertical: 10,
+    color: '#333',
+  },
+  messageCard: {
+    backgroundColor: '#ececec',
+    borderRadius: 5,
+    padding: 20,
+    marginVertical: 8,
+    alignItems: 'center',
+  },
+  messageText: {
+    fontSize: 16,
+    color: '#606060',
   },
   textContainer: {
     flex: 1,
@@ -96,11 +188,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   loggedEventItem: {
-    backgroundColor: '#4CAF50', // Green background for logged events
+    backgroundColor: '#4CAF50',
   },
   pastUnloggedEventItem: {
-    backgroundColor: '#FF6347', // Red background for past unlogged events
+    backgroundColor: '#FF6347',
   },
 });
 
-export default DeliveryListView;
+export default ListView;

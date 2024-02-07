@@ -8,10 +8,8 @@ import { db } from '../../firebase/Firebase';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment-timezone';
 import { useAuth } from "../auth/AuthContext";
-import ListView from "./ListView";
 
 const CalendarComponent = () => {
-  const [viewMode, setViewMode] = useState('calendar');
   const [selectedDay, setSelectedDay] = useState(getCurrentDate());
   const [markedDates, setMarkedDates] = useState(getMarkedDates());
   const [deliveries, setDeliveries] = useState({});
@@ -125,10 +123,7 @@ const CalendarComponent = () => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={styles.title}>{viewMode === 'calendar' ? 'Delivery Calendar' : 'Delivery List'}</Text>
-          <TouchableOpacity onPress={() => setViewMode(viewMode === 'calendar' ? 'list' : 'calendar')} style={styles.toggleButton}>
-            <Text style={{ fontWeight: 'bold'}}>{viewMode === 'calendar' ? 'List View' : 'Calendar View'}</Text>
-          </TouchableOpacity>
+          <Text style={styles.title}>Delivery Calendar</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
           <Ionicons name="person-circle-outline" size={34} color="black" />
@@ -138,22 +133,16 @@ const CalendarComponent = () => {
         isVisible={isModalVisible}
         onClose={handleModalClose}
       />
-      {
-        viewMode === 'calendar' ? (
-          <Calendar
-          current={getCurrentDate()}
-          onDayPress={onDayPress}
-          monthFormat={'MMMM yyyy'}
-          hideExtraDays={true}
-          markingType={'multi-dot'}
-          markedDates={markedDates}
-          style={styles.calendarStyle}
-          theme={styles.calendarTheme}
-        />) : (
-          <ListView deliveries={deliveries} />
-        )
-      }
-
+      <Calendar
+        current={getCurrentDate()}
+        onDayPress={onDayPress}
+        monthFormat={'MMMM yyyy'}
+        hideExtraDays={true}
+        markingType={'multi-dot'}
+        markedDates={markedDates}
+        style={styles.calendarStyle}
+        theme={styles.calendarTheme}
+      />
       <ScrollView style={styles.eventsContainer}>
         {deliveries[selectedDay] && deliveries[selectedDay].length > 0 ? (
           deliveries[selectedDay].map((event, index) => {
@@ -236,7 +225,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    marginTop: 100,
+    marginTop: 70,
   },
   title: {
     fontSize: 24,
@@ -290,14 +279,14 @@ const styles = StyleSheet.create({
   },
   noEventText: {
     color: '#666',
-},
+  },
   checkIcon: {
     fontSize: 24,
-      color: 'green',
+    color: 'green',
   },
   closeIcon: {
     fontSize: 24,
-      color: 'red',
+    color: 'red',
   },
   cloudIcon: {
     position: 'absolute',

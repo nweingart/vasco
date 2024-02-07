@@ -2,7 +2,7 @@
   "expo": {
     "name": "Vasco Delivery Tracker",
     "slug": "vasco",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/appicon.png",
     "userInterfaceStyle": "light",
@@ -19,7 +19,7 @@
       "bundleIdentifier": "com.nedweingart.vasco"
     },
     "android": {
-      "versionCode": 100,
+      "versionCode": 102,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
