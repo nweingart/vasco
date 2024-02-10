@@ -46,6 +46,9 @@ const EquipmentDetail = ({ route }) => {
     navigation.goBack();
   };
 
+  const handleEditMaterials = () => {
+    navigation.navigate('EditDelivery', { deliveryData });
+  }
 
 
   return (
@@ -53,7 +56,7 @@ const EquipmentDetail = ({ route }) => {
       <ScrollView style={styles.container}>
         <View style={styles.detailCard}>
           <View>
-            <Text style={styles.detailHeader}>Equipment Detail</Text>
+            <Text style={styles.detailHeader}>Delivery Detail</Text>
           </View>
           <Text style={styles.detailText}>
             <Text style={styles.detailPropertyText}>Delivery Date: </Text>
@@ -95,26 +98,32 @@ const EquipmentDetail = ({ route }) => {
               {fullDeliveryData && fullDeliveryData.receipts && fullDeliveryData.receipts.map((receipt, index) => (
                 <Image key={index} source={{ uri: receipt }} style={styles.attachmentImage} />
               ))}
+              <View style={styles.buttonContainer}>
+                {
+                  !fullDeliveryData?.receipts ?
+                    <>
+                      <TouchableOpacity style={[styles.iconButtonStyle, { backgroundColor: '#FF0A0A', marginHorizontal: 7.5 }]} onPress={() => handleDeleteDelivery(deliveryData.deliveryId)}>
+                        <Ionicons name="trash-outline" size={35} color="black" />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={[styles.iconButtonStyle, { backgroundColor: '#FFC300', marginHorizontal: 7.5 }]} onPress={handleEditMaterials}>
+                        <Ionicons name="create-outline" size={35} color="black" />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={[styles.iconButtonStyle, { backgroundColor: '#4CAF50', marginHorizontal: 7.5 }]} onPress={handleReceiveMaterials}>
+                        <Ionicons name="archive-outline" size={35} color="black" />
+                      </TouchableOpacity>
+                    </> :
+                    <>
+                      <TouchableOpacity style={[styles.iconButtonStyle, { backgroundColor: '#FF0A0A', marginHorizontal: 7.5 }]} onPress={() => handleDeleteDelivery(deliveryData.deliveryId)}>
+                        <Ionicons name="trash-outline" size={35} color="black" />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={[styles.iconButtonStyle, { backgroundColor: '#4CAF50', marginHorizontal: 7.5 }]} onPress={handleEditMaterials}>
+                        <Ionicons name="create-outline" size={35} color="black" />
+                      </TouchableOpacity>
+                    </>
+                }
+              </View>
             </ScrollView>
           </View>
-        </View>
-        <View style={styles.buttonContainer}>
-          {
-          !fullDeliveryData?.receipts ?
-            <>
-              <TouchableOpacity style={{...styles.buttonStyle, backgroundColor: 'red'}}  onPress={() => handleDeleteDelivery(deliveryData.deliveryId)}>
-                <Text style={styles.buttonText}>Delete Materials</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{...styles.buttonStyle, backgroundColor: '#40D25C'}}  onPress={handleReceiveMaterials}>
-                <Text style={styles.buttonText}>Receive Materials</Text>
-              </TouchableOpacity>
-            </> :
-            <>
-              <TouchableOpacity style={{...styles.buttonStyle, backgroundColor: 'red'}}  onPress={handleDeleteDelivery}>
-                <Text style={styles.buttonText}>Delete Materials</Text>
-              </TouchableOpacity>
-            </>
-        }
         </View>
       </ScrollView>
       <TouchableOpacity
@@ -138,6 +147,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
   },
+  iconButtonStyle: {
+    marginVertical: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60, // Adjust the size as needed
+    height: 60, // Adjust the size as needed
+    borderRadius: 35, // This creates a circular button
+    backgroundColor: '#f9f9f9', // Optional: change the background color as needed
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
   detailHeader: {
     fontSize: 24,
     color: '#333',
@@ -154,9 +175,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
     marginTop: 20,
   },
   buttonStyle:{

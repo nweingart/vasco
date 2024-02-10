@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -17,6 +17,7 @@ import ListView from "./screens/calendar/ListView";
 import PhotoBackup from "./screens/new/PhotoBackup";
 import EquipmentDetail from "./screens/calendar/EquipmentDetail";
 import ComingSoonScreen from "./screens/settings/ComingSoon";
+import EditDelivery from "./screens/calendar/EditDelivery";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -27,6 +28,7 @@ function CalendarStackNavigator() {
     <CalendarStack.Navigator screenOptions={{ headerShown: false }}>
       <CalendarStack.Screen name="Calendar" component={CalendarComponent} />
       <CalendarStack.Screen name="EquipmentDetail" component={EquipmentDetail} />
+      <CalendarStack.Screen name="EditDelivery" component={EditDelivery} />
       <CalendarStack.Screen name="PhotoBackup" component={PhotoBackup} />
       <CalendarStack.Screen name="Settings" component={Settings} />
     </CalendarStack.Navigator>
@@ -50,7 +52,7 @@ const BottomTabNavigator = () => {
           if (route.name === 'Calendar') {
             iconName = focused ? 'calendar' : 'calendar-outline';
           } else if (route.name === 'Feed') {
-            iconName = focused ? 'list' : 'list-outline';
+            iconName = focused ? 'newspaper' : 'newspaper-outline';
           } else if (route.name === 'Analytics') {
             iconName = focused ? 'analytics' : 'analytics-outline';
           } else if (route.name === 'Projects') {
@@ -61,17 +63,19 @@ const BottomTabNavigator = () => {
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#FFC300',
-        tabBarInactiveTintColor: 'gray',
-        tabBarShowLabel: false, // You can use tabBarOptions for other options but tabBarShowLabel goes here for RN v5+
+        tabBarInactiveTintColor: 'black',
+        tabBarShowLabel: true,
+        tabBarLabelStyle: { color: 'black'}
       })}
     >
-      <Tab.Screen name="Calendar" component={CalendarStackNavigator} options={{ headerShown: false }} />
-      <Tab.Screen name="Feed" component={ListView} options={{ headerShown: false }} />
-      <Tab.Screen name="Analytics" component={createComingSoonScreen('Analytics')} options={{ headerShown: false }} />
-      <Tab.Screen name="Projects" component={createComingSoonScreen('Projects')} options={{ headerShown: false }} />
+      <Tab.Screen name="Calendar" component={CalendarStackNavigator} options={{ headerShown: false, title: 'Calendar' }} />
+      <Tab.Screen name="Feed" component={ListView} options={{ headerShown: false, title: 'Feed' }} />
+      <Tab.Screen name="Analytics" component={createComingSoonScreen('Insights')} options={{ headerShown: false, title: 'Insights' }} />
+      <Tab.Screen name="Projects" component={createComingSoonScreen('Projects')} options={{ headerShown: false, title: 'Projects' }} />
     </Tab.Navigator>
   );
 };
+
 
 function AppNavigator() {
   const { authToken, orgId, userDetails, isLoading } = useAuth();

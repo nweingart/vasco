@@ -308,7 +308,7 @@ const CalendarModal = ({ isVisible, onClose }) => {
       <View>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Delivery Details</Text>
+            <Text style={{...styles.modalText, marginLeft: '-45%'}}>Enter Delivery Info</Text>
             <DropDownPicker
               placeholder={"Select Project"}
               style={{
@@ -465,18 +465,15 @@ const CalendarModal = ({ isVisible, onClose }) => {
 const styles = StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: 'flex-start', // Adjusted from 'center' to 'flex-start'
   },
   fullScreenModalView: {// Added to ensure the modal view takes up the full screen// Reduced side padding for more space
-    alignItems: 'center',
     width: '100%', // Ensure the modal view spans the width of the screen
   },
   modalText: {
     fontSize: 20,
     marginBottom: 15,
-    textAlign: 'center',
     fontWeight: 'bold',
-    marginTop: 10,// Optional: to make the title stand out
+    marginTop: 10,
   },
   input: {
     borderWidth: 1,

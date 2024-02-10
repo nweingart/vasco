@@ -160,20 +160,20 @@ const CalendarComponent = () => {
                 <View style={{ flex: 1 }}>
                   <View style={{ display: 'flex', flexDirection: 'column'}}>
                     <Text style={styles.eventText}>
-                      <Text style={styles.eventPropertyText}>Vendor: </Text>
-                      {event.vendor}
-                    </Text>
-                    <Text style={styles.eventText}>
                       <Text style={styles.eventPropertyText}>Description: </Text>
                       {event.material}
                     </Text>
                     <Text style={styles.eventText}>
-                      <Text style={styles.eventPropertyText}>Project: </Text>
-                      {event.project}
+                      <Text style={styles.eventPropertyText}>Vendor: </Text>
+                      {event.vendor}
                     </Text>
                     <Text style={styles.eventText}>
                       <Text style={styles.eventPropertyText}>Notes: </Text>
                       {event.notes}
+                    </Text>
+                    <Text style={styles.eventText}>
+                      <Text style={styles.eventPropertyText}>Project: </Text>
+                      {event.project}
                     </Text>
                     <Text style={styles.eventText}>
                       <Text style={styles.eventPropertyText}>Subcontractor: </Text>
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    marginTop: 70,
+    marginTop: 40,
   },
   title: {
     fontSize: 24,
@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
   calendarStyle: {
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+    borderRadius: 10,
   },
   calendarTheme: {
     todayTextColor: '#FFC300',
@@ -305,10 +306,10 @@ const styles = StyleSheet.create({
     marginVertical: 3.5,
   },
   loggedEventItem: {
-    backgroundColor: '#4CAF50', // Green background for logged events
+    backgroundColor: '#4CAF50',
   },
   pastUnloggedEventItem: {
-    backgroundColor: '#FF6347', // Red background for past unlogged events
+    backgroundColor: '#FF6347',
   },
   toggleButton: {
     backgroundColor: '#FFC300',

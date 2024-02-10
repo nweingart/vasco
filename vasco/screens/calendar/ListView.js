@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import {View, Text, FlatList, StyleSheet, TouchableOpacity, ScrollView, Image} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
 import { collection, onSnapshot, query, where } from "firebase/firestore";
@@ -71,6 +71,7 @@ const ListView = () => {
   };
 
 
+
   const { pendingDeliveries, upcomingDeliveries, pastDeliveries } = organizeDeliveries();
 
   const dataWithHeaders = [
@@ -99,10 +100,17 @@ const ListView = () => {
         ]}
       >
         <View style={styles.textContainer}>
-          <Text style={styles.text}><Text style={styles.propertyName}>Vendor:</Text> {item.vendor}</Text>
-          <Text style={styles.text}><Text style={styles.propertyName}>Material:</Text> {item.material}</Text>
           <Text style={styles.text}><Text style={styles.propertyName}>Delivery Date:</Text> {moment(item.deliveryDate).format('YYYY-MM-DD')}</Text>
-          <Text style={styles.text}><Text style={styles.propertyName}>Status:</Text> {item.status}</Text>
+          <Text style={styles.text}><Text style={styles.propertyName}>Description:</Text> {item.material}</Text>
+          <Text style={styles.text}><Text style={styles.propertyName}>Vendor:</Text> {item.vendor}</Text>
+          <Text style={styles.text}><Text style={styles.propertyName}>Notes:</Text> {item.notes}</Text>
+          <View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {([...(item.photos || []), ...(item.receipts || [])]).map((imageUri, index) => (
+                <Image key={index} source={{ uri: imageUri }} style={styles.attachmentImage} />
+              ))}
+            </ScrollView>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -156,7 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 100,
+    marginTop: 60,
     marginBottom: 20,
   },
   header: {
@@ -192,6 +200,13 @@ const styles = StyleSheet.create({
   },
   pastUnloggedEventItem: {
     backgroundColor: '#FF6347',
+  },
+  attachmentImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    marginRight: 10,
+    marginVertical: 5
   },
 });
 
