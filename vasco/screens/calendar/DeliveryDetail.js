@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/Firebase';
 
-const EquipmentDetail = ({ route }) => {
+const DeliveryDetail = ({ route }) => {
   const [fullDeliveryData, setFullDeliveryData] = useState(null);
   const { deliveryData } = route.params;
   const navigation = useNavigation();
@@ -221,4 +221,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EquipmentDetail
+export default DeliveryDetail

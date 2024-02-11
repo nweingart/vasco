@@ -7,32 +7,44 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { store } from './redux/redux';
 import { AuthProvider, useAuth} from './screens/auth/AuthContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Login from './screens/auth/Login';
 import CreateOrganization from "./screens/auth/CreateOrganization";
 import CalendarComponent from './screens/calendar/Calendar';
 import Settings from './screens/settings/Settings';
-import ListView from "./screens/calendar/ListView";
+import DeliveryFeed from './screens/feed/DeliveryFeed';
 import PhotoBackup from "./screens/new/PhotoBackup";
-import EquipmentDetail from "./screens/calendar/EquipmentDetail";
+import DeliveryDetail from "./screens/calendar/DeliveryDetail";
 import ComingSoonScreen from "./screens/settings/ComingSoon";
 import EditDelivery from "./screens/calendar/EditDelivery";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const CalendarStack = createStackNavigator();
+const FeedStack = createStackNavigator();
 
-function CalendarStackNavigator() {
+const CalendarStackNavigator = () => {
   return (
     <CalendarStack.Navigator screenOptions={{ headerShown: false }}>
       <CalendarStack.Screen name="Calendar" component={CalendarComponent} />
-      <CalendarStack.Screen name="EquipmentDetail" component={EquipmentDetail} />
+      <CalendarStack.Screen name="DeliveryDetail" component={DeliveryDetail} />
       <CalendarStack.Screen name="EditDelivery" component={EditDelivery} />
       <CalendarStack.Screen name="PhotoBackup" component={PhotoBackup} />
       <CalendarStack.Screen name="Settings" component={Settings} />
     </CalendarStack.Navigator>
   );
+}
+
+const FeedStackNavigator = () => {
+  return (
+    <FeedStack.Navigator screenOptions={{ headerShown: false }}>
+      <FeedStack.Screen name="DeliveryFeed" component={DeliveryFeed} />
+      <FeedStack.Screen name="DeliveryDetail" component={DeliveryDetail} />
+      <FeedStack.Screen name="EditDelivery" component={EditDelivery} />
+      <FeedStack.Screen name="PhotoBackup" component={PhotoBackup} />
+      <FeedStack.Screen name="Settings" component={Settings} />
+    </FeedStack.Navigator>
+  )
 }
 
 function createComingSoonScreen(name) {
@@ -69,7 +81,7 @@ const BottomTabNavigator = () => {
       })}
     >
       <Tab.Screen name="Calendar" component={CalendarStackNavigator} options={{ headerShown: false, title: 'Calendar' }} />
-      <Tab.Screen name="Feed" component={ListView} options={{ headerShown: false, title: 'Feed' }} />
+      <Tab.Screen name="Feed" component={FeedStackNavigator} options={{ headerShown: false, title: 'Feed' }} />
       <Tab.Screen name="Analytics" component={createComingSoonScreen('Insights')} options={{ headerShown: false, title: 'Insights' }} />
       <Tab.Screen name="Projects" component={createComingSoonScreen('Projects')} options={{ headerShown: false, title: 'Projects' }} />
     </Tab.Navigator>

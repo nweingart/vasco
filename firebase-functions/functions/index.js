@@ -45,7 +45,7 @@ exports.sendEmailNotification = functions
         template = template.replace(key, replacements[key]);
       }
 
-      return client.sendEmailNotification({
+      return client.sendEmail({
         "From": "delivery@vascoapp.io",
         "To": emailList.join(", "),
         "Subject": "New Material Delivery!",

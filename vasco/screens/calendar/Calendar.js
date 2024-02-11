@@ -146,15 +146,17 @@ const CalendarComponent = () => {
       <ScrollView style={styles.eventsContainer}>
         {deliveries[selectedDay] && deliveries[selectedDay].length > 0 ? (
           deliveries[selectedDay].map((event, index) => {
+            let borderColor = 'gray'; // Default color
+            if (event.logged) {
+              borderColor = 'green'; // Example color for logged events
+            } else if (moment(event.deliveryDate).isBefore(moment(), 'day') && (!event.logged || event.logged === false)) {
+              borderColor = 'red'; // Example color for past unlogged events
+            }
             const isPastUnloggedEvent = moment(event.deliveryDate).isBefore(moment(), 'day') && (!event.logged || event.logged === false);
             return (
               <TouchableOpacity
-                onPress={() => navigation.navigate('EquipmentDetail', { deliveryData: event })}
-                style={[
-                  styles.eventItem,
-                  event.logged ? styles.loggedEventItem : null,
-                  isPastUnloggedEvent ? styles.pastUnloggedEventItem : null
-                ]}
+                onPress={() => navigation.navigate('DeliveryDetail', { deliveryData: event })}
+                style={{ ...styles.eventItem, borderLeftColor: borderColor }}
                 key={index}
               >
                 <View style={{ flex: 1 }}>
@@ -241,7 +243,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
+    borderLeftWidth: 10, // Keep this for the border but remove the static color
   },
+
   calendarStyle: {
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',

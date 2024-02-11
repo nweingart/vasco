@@ -2,22 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Material Entry Notification</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #000; /* Ensure all text is black */
+    }
+    .header {
+      background-color: #FFC300;
+      padding: 15px 0;
+      text-align: center;
+    }
+    .content, .footer {
+      padding: 20px;
+      text-align: center;
+      color: #000; /* Ensure text in these sections is also black */
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 20px 0;
+      background-color: #FFC300;
+      color: black;
+      border-radius: 5px;
+    }
+    a, .footer {
+      color: #000; /* Adjusting anchor tags and footer to black */
+    }
+  </style>
 </head>
 <body>
-<h1>New Delivery</h1>
-<h3>Order Details</h3>
-<p>Date: {{date}}</p>
-
-<h3>Receipts</h3>
-{{#each receipts}}
-<img src="{{this}}" alt="receipt" style="width:1000px;height:600px;">
-{{/each}}
-
-<h3>Photos</h3>
-{{#each images}}
-<img src="{{this}}" alt="image" style="width:1000px;height:600px;">
-{{/each}}
+<div class="header">
+  <img src="https://firebasestorage.googleapis.com/v0/b/vasco-6851a.appspot.com/o/websitelogo.png?alt=media&token=470f178e-bf3f-4575-9572-e4e4d5d61832" alt="Vasco Logo" width="50" height="50">
+  <h1>Vasco</h1>
+</div>
+<div class="content">
+  <p>Hello User,</p>
+  <p>Your new Delivery Entry is available to view.</p>
+  <a href="https://vasco-6851a.web.app/login" class="button">View Delivery Entry</a>
+  <p class="content">If you have any questions, feel free to email our customer success team: <a href="mailto:zach@vascoapp.io">zach@vascoapp.io</a>. (We're lightning quick at replying.)</p>
+</div>
+<div class="footer">
+  <p>Thank you for using Vasco!</p>
+  <p>© 2024 Vasco</p>
+</div>
 </body>
 </html>
-

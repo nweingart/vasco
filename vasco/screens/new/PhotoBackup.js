@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
+  Platform,
   Alert,
   FlatList,
   Image,
@@ -10,13 +11,19 @@ import {
   Dimensions,
   TextInput,
   ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from "@react-navigation/native";
 import { uploadImageToFirebase } from "../../utils/uploadImage";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { db } from '../../firebase/Firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { db, functions } from '../../firebase/Firebase';
+import {collection, doc, onSnapshot, query, updateDoc, where} from 'firebase/firestore';
+import { httpsCallable } from "firebase/functions";
+const sendEmailNotification = httpsCallable(functions, 'sendEmailNotification')
+import { useAuth } from '../auth/AuthContext';
+import moment from "moment/moment";
+
 
 const screenWidth = Dimensions.get('window').width;
 const isTablet = screenWidth >= 768;
@@ -26,12 +33,40 @@ const PhotoBackup = ({ route }) => {
   const [receipts, setReceipts] = useState([]);
   const [status, setStatus] = useState('Not Approved');
   const [notes, setNotes] = useState('');
+  const [emails, setEmails] = useState([]);
+  const { orgId } = useAuth()
 
   const navigation = useNavigation();
 
   const { deliveryData } = route.params
   console.log(deliveryData)
   const deliveryId = deliveryData.deliveryId
+
+  useEffect(() => {
+    let unsubscribe = () => {}; // Declare unsubscribe function
+
+    if (orgId) {
+      const queryRef = query(collection(db, 'Every'), where('orgId', '==', orgId));
+
+      // Subscribe to the query
+      unsubscribe = onSnapshot(queryRef, (snapshot) => {
+        const fetchedEmails = [];
+        snapshot.forEach((doc) => {
+          // Assuming each document has an 'email' field
+          const documentData = doc.data();
+          if (documentData.email) {
+            fetchedEmails.push(documentData.email);
+          }
+        });
+        setEmails(fetchedEmails); // Update component state
+      }, (error) => {
+        console.error("Error fetching emails:", error);
+        // Handle any errors
+      });
+    }
+
+    return () => unsubscribe(); // Cleanup function to unsubscribe
+  }, [orgId]); // Dependency array
 
   const pickImages = async (source, type) => {
     const permissions = source === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -94,16 +129,21 @@ const PhotoBackup = ({ route }) => {
   }
 
   const setApprovedOpacity = () => {
-    return status === 'Approved' ? 1 : 0.5;
+    return status === 'Approved' ? 1 : 0.3;
+  }
+
+  const setPendingOpacity = () => {
+    return status === 'Pending' ? 1 : 0.3;
   }
 
   const setNotApprovedOpacity = () => {
-    return status === 'Not Approved' ? 1 : 0.5;
+    return status === 'Not Approved' ? 1 : 0.3;
   }
 
-  const handleStatus = () => {
-    setStatus(status === 'Not Approved' ? 'Approved' : 'Not Approved');
-  }
+  const handleStatus = (newStatus) => {
+    setStatus(newStatus);
+  };
+
 
   const renderImageItem = ({ item, index, type }) => {
     if (item === 'add') {
@@ -169,6 +209,16 @@ const PhotoBackup = ({ route }) => {
             try {
               const photoUrls = await submitImages(photos);
               const receiptUrls = await submitImages(receipts);
+              if (emails) {
+                await sendEmailNotification({ emailList: emails, timezone: "America/New_York" })
+                  .then(() => console.log('Email sent successfully'))
+                  .catch((error) => {
+                    // Log or handle email sending error
+                    console.error('Error sending email:', error);
+                    Alert.alert("Error", "Failed to send email notification. Please try again.");
+                    return; // Exit the function early on error
+                  });
+              }
               await updateScheduledDelivery(deliveryId, photoUrls, receiptUrls, status, notes);
               console.log('Scheduled Delivery updated successfully')
               navigation.navigate("Calendar");
@@ -186,59 +236,78 @@ const PhotoBackup = ({ route }) => {
   };
 
   return (
-    <ScrollView>
-      <View style={styles.container}>
-        <Text style={{ ...styles.title, fontSize: isTablet ? 36 : 24 }}>Add Photo Backup</Text>
-        <View style={styles.section}>
-          <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Receipts</Text>
-          <FlatList
-            horizontal
-            data={['add', ...receipts]}
-            renderItem={(props) => renderImageItem({ ...props, type: 'receipt' })}
-            keyExtractor={(item, index) => index.toString()}
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <ScrollView>
+        <View style={styles.container}>
+          <Text style={{ ...styles.title, fontSize: isTablet ? 36 : 24 }}>Add Photo Backup</Text>
+          <View style={styles.section}>
+            <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Receipts</Text>
+            <FlatList
+              horizontal
+              data={['add', ...receipts]}
+              renderItem={(props) => renderImageItem({ ...props, type: 'receipt' })}
+              keyExtractor={(item, index) => index.toString()}
+            />
+          </View>
+          <View style={styles.section}>
+            <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Photos of Material</Text>
+            <FlatList
+              horizontal
+              data={['add', ...photos]}
+              renderItem={(props) => renderImageItem({ ...props, type: 'photo' })}
+              keyExtractor={(item, index) => index.toString()}
+            />
+          </View>
+          <View style={styles.actionContainer}>
+            <View style={styles.statusIconContainer}>
+              <TouchableOpacity
+                onPress={() => handleStatus('Approved')}
+                style={{ ...styles.iconButton, opacity: setApprovedOpacity()}}
+              >
+                <Ionicons name="checkmark-circle" size={60} color="#40D35D" />
+                <Text style={styles.statusLabel}>Approved</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.statusIconContainer}>
+              <TouchableOpacity
+                onPress={() => handleStatus('Pending')}
+                style={{...styles.iconButton, opacity: setPendingOpacity()}}
+              >
+                <Ionicons name="refresh-circle" size={60} color="gray" />
+                <Text style={styles.statusLabel}>Pending</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.statusIconContainer}>
+              <TouchableOpacity
+                onPress={() => handleStatus('Not Approved')}
+                style={{...styles.iconButton, opacity: setNotApprovedOpacity()}}
+              >
+                <Ionicons name="close-circle" size={60} color="#FF0A0A" />
+                <Text style={styles.statusLabel}>Not Approved</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <Text style={styles.notesLabel}>Notes</Text>
+          <TextInput
+            style={styles.textBox}
+            value={notes}
+            placeholder={'Give brief description of delivery items'}
+            onChangeText={handleNotesChange}
+            autoCapitalize="sentences"
           />
         </View>
-        <View style={styles.section}>
-          <Text style={{ ...styles.headerText, fontSize: isTablet ? 24 : 16 }}>Add Photos of Material</Text>
-          <FlatList
-            horizontal
-            data={['add', ...photos]}
-            renderItem={(props) => renderImageItem({ ...props, type: 'photo' })}
-            keyExtractor={(item, index) => index.toString()}
-          />
-        </View>
-        <View style={styles.actionContainer}>
-          <TouchableOpacity
-            style={{...styles.button, backgroundColor: '#40D35D', opacity: setApprovedOpacity(), marginRight: 20}}
-            onPress={handleStatus}>
-            <Text style={styles.buttonText}>Approved</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{...styles.button, backgroundColor: '#FF0A0A', opacity: setNotApprovedOpacity(), marginLeft: 20}}
-            onPress={handleStatus}>
-            <Text style={styles.buttonText}>Not Approved</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.notesLabel}>Notes</Text>
-        <TextInput
-          style={styles.textBox}
-          value={notes}
-          placeholder={'Give brief description of delivery items'}
-          onChangeText={handleNotesChange}
-          autoCapitalize="sentences"
-        />
-      </View>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={handleBack}>
-        <Ionicons name="arrow-back" size={24} color="black" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={() => handleNext(deliveryId)}>
-        <Ionicons name="arrow-forward" size={24} color="black" />
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={handleBack}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={() => handleNext(deliveryId)}>
+          <Ionicons name="arrow-forward" size={24} color="black" />
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -317,26 +386,10 @@ const styles = StyleSheet.create({
     fontSize: 60,
     color: 'green',
   },
-  button: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFC300',
-    padding: isTablet ? 10 : 15,
-    borderRadius: 10,
-    height: isTablet ? 70 : 65,
-    width: isTablet ? 200 : 150,
-    marginHorizontal: isTablet ? 20 : 0,
-  },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
-  },
-  actionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginVertical: 15,
   },
   textBox: {
     width: '100%',
@@ -368,6 +421,28 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+  },
+
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // This ensures even spacing and centering
+    alignItems: 'center', // Vertically aligns the icons in the container
+    width: '100%',
+    marginVertical: 15,
+  },
+  statusIconContainer: {
+    alignItems: 'center', // Centers the icons and text vertically in this container
+  },
+  iconButton: {
+    // Adjust as needed, but ensure it allows for touchable space
+    alignItems: 'center', // Make sure icon and text are aligned
+  },
+
+  statusLabel: {
+    marginTop: 8, // Space between icon and label
+    fontSize: 12, // Adjusted for better visibility
+    fontWeight: '600', // Ensure this is a string 'bold' might be more compatible
+    textAlign: 'center', // Ensures text is centered under the icon
   },
 })
 
